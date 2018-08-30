@@ -7,5 +7,5 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 for i in $(ls "$1/warped"/*.jpg.vrt | xargs -n 1 basename ); do
-	gdal2tiles.py -v -e -z 1-14 "$1/warped/$i" "tiles" || break
+	gdal2tiles.py -v -e -z 1-14 "$1/warped/$i" "$1/tiles" || break
 done

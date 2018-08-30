@@ -16,4 +16,4 @@ for i in $(ls $OUTPATH/*.jpg | xargs -n 1 basename ); do
   gdalwarp -s_srs EPSG:4326 -t_srs EPSG:3857 -of VRT -co tiled=yes -dstnodata 0 "$OUTPATH/$i" "$OUTPATH/warped/$i.vrt"
 done
 
-gdalbuildvrt all.vrt $OUTPATH/warped/*.jpg.vrt
+gdalbuildvrt $1/all.vrt $OUTPATH/warped/*.jpg.vrt
