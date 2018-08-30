@@ -1,0 +1,11 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p gdal
+#
+if [[ $# -eq 0 ]] ; then
+    echo 'Must pass output directory'
+    exit 1
+fi
+
+for i in $(ls "$1/warped"/*.jpg.vrt | xargs -n 1 basename ); do
+	gdal2tiles.py -v -e -z 1-14 "$1/warped/$i" "tiles" || break
+done

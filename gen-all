@@ -1,0 +1,14 @@
+trap "echo Exited!; exit;" SIGINT SIGTERM
+
+OUT_DIR=$1
+
+if [[ $# -eq 0 ]] ; then
+    echo 'Must pass output directory'
+    exit 1
+fi
+
+TMPDIR=/tmp ./scraper.py $OUT_DIR
+./convert_gif $OUT_DIR
+./do_warp $OUT_DIR
+./make_tiles $OUT_DIR
+./create-leaflet.py $OUT_DIR
