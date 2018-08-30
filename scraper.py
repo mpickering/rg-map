@@ -9,6 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from os.path import basename, splitext
+import time
 
 
 from pyvirtualdisplay import Display
@@ -50,13 +51,13 @@ display.start()
 
 meta = {}
 
-"rg2-event-list"
 
 
 for base_url in urls:
     driver = webdriver.Firefox()
     print ("Processing {}".format(base_url))
     driver.get(base_url + "rg2/")
+    time.sleep(10)
     WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.ID, 'rg2-event-list')))
     # Query information about the georeferenced events.
     v = driver.execute_script("return rg2.events.events.filter(x => x.worldfile.valid)")

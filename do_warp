@@ -6,6 +6,8 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
+echo "Starting warping"
+
 OUTPATH=$(readlink -f $1)
 
 echo $OUTPATH

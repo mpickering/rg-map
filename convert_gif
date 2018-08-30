@@ -1,6 +1,8 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i bash -p imagemagick
 
+echo "Starting convert_gif"
+
 if [[ $# -eq 0 ]] ; then
     echo 'Must pass output directory'
     exit 1
