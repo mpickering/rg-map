@@ -18,7 +18,7 @@ zoom_level = int(sys.argv[2])
 def make_event_link(event):
     split_url = urlsplit(event['map_url'])
     map_url = urlunsplit((split_url.scheme, split_url.netloc, '/rg2/#{}'.format(event['kartatid']) , "", ""))
-    return '<a href="{}">{} - {}</a>'.format(map_url, html.escape(event['name']), html.escape(event['date']))
+    return '<a href="{}">{} - {}</a>'.format(map_url, event['name'].replace("'","\\'"), event['date'])
 
 icon_map = dict ([ ("I", "darkred"),
       ("N", "lightred"),
@@ -102,8 +102,8 @@ for image_vrt in images:
     event = events[key]
 
     center = GetCenterImage(image_vrt)
-
-    folium.Marker(center, popup=make_event_link(event), icon=make_icon(event)).add_to(m)
+    popup = folium.map.Popup(html=make_event_link(event))
+    folium.Marker(center, popup=popup, icon=make_icon(event)).add_to(m)
 
 tiles_loc = "https://s3-eu-west-1.amazonaws.com/rg-maps/{z}/{x}/{y}.png"
 tiles_loc_dev = "tiles/{z}/{x}/{y}.png"
