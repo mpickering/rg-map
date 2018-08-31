@@ -6,6 +6,6 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-for i in $(ls "$1/warped"/*.jpg.vrt | xargs -n 1 basename ); do
-	gdal2tiles.py -v -e -z 1-$2 "$1/warped/$i" "$1/tiles" || break
+for i in $(ls "$1/groups"/*.vrt); do
+	gdal2tiles.py -v -e -z 1-$2 "$i" "$1/tiles" || break
 done
