@@ -6,13 +6,16 @@ from PIL import Image
 
 import os
 import folium
-from folium.plugins import ImageOverlay
 from pyproj import Proj, transform
 import glob
 import pickle
 from urllib.parse import urlsplit, urlunsplit
 import html
 import sys
+
+
+output_dir = sys.argv[1]
+zoom_level = int(sys.argv[2])
 
 
 def make_event_link(event):
@@ -31,7 +34,6 @@ def make_icon(event):
     return folium.map.Icon(color=icon_map[event['rawtype']])
 
 
-output_dir = sys.argv[1]
 images = glob.glob(os.path.join(output_dir,'warped/*.jpg.vrt'))
 
 print(len(images))
@@ -76,7 +78,7 @@ for image_vrt in images:
 
 tiles_loc = "https://s3-eu-west-1.amazonaws.com/rg-maps/{z}/{x}/{y}.png"
 
-img = folium.map.TileLayer(tiles=tiles_loc, attr="RouteGadget")
+img = folium.raster_layers.TileLayer(tiles=tiles_loc, attr="RouteGadget", tms=True, max_native_zoom=zoom_level )
 
 img.add_to(m)
 

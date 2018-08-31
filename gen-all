@@ -4,6 +4,7 @@ set -e
 trap "echo Exited!; exit;" SIGINT SIGTERM
 
 OUT_DIR=$1
+ZOOM_LEVEL=14
 
 if [[ $# -eq 0 ]] ; then
     echo 'Must pass output directory'
@@ -17,5 +18,5 @@ mkdir -p $OUT_DIR/results
 #TMPDIR=/tmp ./scraper.py $OUT_DIR
 ./convert_gif $OUT_DIR
 ./do_warp $OUT_DIR
-./make_tiles $OUT_DIR
-./create-leaflet.py $OUT_DIR
+./make_tiles $OUT_DIR $ZOOM_LEVEL
+./create-leaflet.py $OUT_DIR $ZOOM_LEVEL
