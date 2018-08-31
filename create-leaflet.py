@@ -90,7 +90,7 @@ print(len(images))
 events = pickle.load(open(os.path.join(output_dir, 'meta.pickle'), 'rb'))
 
 
-m = folium.Map([55.3781, -3.4360], zoom_start=10, tiles='OpenStreetMap')
+m = folium.Map([54.3781, -3.4360], zoom_start=6, tiles='OpenStreetMap')
 
 for image_vrt in images:
     print(image_vrt)
