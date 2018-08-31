@@ -74,7 +74,9 @@ def MakePolygon(raster):
 
 images = glob.glob(os.path.join(output_dir,'warped/*.jpg.vrt'))
 
-init_polygons = [{'fp': tuple([fp]), 'poly': MakePolygon(fp)} for fp in images]
+polydict = dict([(fp, MakePolygon (fp)) for fp in images])
+
+init_polygons = [{'fp': tuple([key]), 'poly': value} for key, value in polydict.items()]
 truelen = len(init_polygons)
 
 result = []
@@ -115,8 +117,9 @@ while progress:
 # TODO: Choose a sensible ordering of the layers, perhaps put the biggest ones at the bottom.
 
 for ix, group in enumerate(loop_result):
+    sorted_group = sorted(list(group['fp']), key=lambda fp: polydict[fp].area)
     path = os.path.join(output_dir, 'groups', "{}.vrt".format(ix))
-    subprocess.run(["gdalbuildvrt", path] + list(group['fp']))
+    subprocess.run(["gdalbuildvrt", path] + sorted_group)
 
 
 
