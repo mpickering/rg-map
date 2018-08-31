@@ -108,8 +108,9 @@ for image_vrt in images:
 tiles_loc = "https://s3-eu-west-1.amazonaws.com/rg-maps/{z}/{x}/{y}.png"
 tiles_loc_dev = "tiles/{z}/{x}/{y}.png"
 
-img = folium.raster_layers.TileLayer(tiles=tiles_loc_dev
+img = folium.raster_layers.TileLayer(tiles=tiles_loc
                                     , attr="RouteGadget"
+                                    , name="RouteGadget"
                                     , tms=True
                                     , max_native_zoom=zoom_level
                                     , overlay=True
