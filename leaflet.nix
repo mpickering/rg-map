@@ -1,6 +1,5 @@
 let
   np = import <nixpkgs> { };
-  affine = import ./affine.nix { nixpkgs = np; };
 
   ext = py-self: py-super: {
           folium = py-super.folium.overridePythonAttrs ( oldAttrs : {
@@ -15,5 +14,5 @@ let
 
 in
   with np;
-  mkShell { buildInputs = [(new-py.withPackages (ps: with ps; [ affine pillow folium pyproj ]))]; }
+  mkShell { buildInputs = [(new-py.withPackages (ps: with ps; [ gdal folium ]))]; }
 

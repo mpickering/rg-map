@@ -1,17 +1,14 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i python3 leaflet.nix
 
-import affine
-from PIL import Image
-
 import os
 import folium
-from pyproj import Proj, transform
 import glob
 import pickle
 from urllib.parse import urlsplit, urlunsplit
 import html
 import sys
+from osgeo import gdal, osr
 
 
 output_dir = sys.argv[1]
@@ -33,6 +30,59 @@ icon_map = dict ([ ("I", "darkred"),
 def make_icon(event):
     return folium.map.Icon(color=icon_map[event['rawtype']])
 
+def GetCenter(gt,cols,rows):
+    ''' Return list of corner coordinates from a geotransform
+
+        @type gt:   C{tuple/list}
+        @param gt: geotransform
+        @type cols:   C{int}
+        @param cols: number of columns in the dataset
+        @type rows:   C{int}
+        @param rows: number of rows in the dataset
+        @rtype:    C{[float,...,float]}
+        @return:   coordinates of each corner
+    '''
+    px = cols/2
+    py = rows/2
+    x=gt[0]+(px*gt[1])+(py*gt[2])
+    y=gt[3]+(px*gt[4])+(py*gt[5])
+    return [x, y]
+
+def ReprojectCoords(coords,src_srs,tgt_srs):
+    ''' Reproject a list of x,y coordinates.
+
+        @type geom:     C{tuple/list}
+        @param geom:    List of [[x,y],...[x,y]] coordinates
+        @type src_srs:  C{osr.SpatialReference}
+        @param src_srs: OSR SpatialReference object
+        @type tgt_srs:  C{osr.SpatialReference}
+        @param tgt_srs: OSR SpatialReference object
+        @rtype:         C{tuple/list}
+        @return:        List of transformed [[x,y],...[x,y]] coordinates
+    '''
+    trans_coords=[]
+    transform = osr.CoordinateTransformation( src_srs, tgt_srs)
+    for x,y in coords:
+        x,y,z = transform.TransformPoint(x,y)
+        trans_coords.append([x,y])
+    return trans_coords
+
+def GetCenterImage(raster):
+    ds=gdal.Open(raster)
+    gt=ds.GetGeoTransform()
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+
+    center = GetCenter(gt,cols,rows)
+
+    src_srs=osr.SpatialReference()
+    src_srs.ImportFromWkt(ds.GetProjection())
+    tgt_srs=osr.SpatialReference()
+    tgt_srs.ImportFromEPSG(4326)
+    geo_ext=ReprojectCoords([center],src_srs,tgt_srs)
+
+    return [geo_ext[0][1], geo_ext[0][0]]
+
 
 images = glob.glob(os.path.join(output_dir,'warped/*.jpg.vrt'))
 
@@ -43,38 +93,17 @@ events = pickle.load(open(os.path.join(output_dir, 'meta.pickle'), 'rb'))
 m = folium.Map([55.3781, -3.4360], zoom_start=10, tiles='OpenStreetMap')
 
 for image_vrt in images:
-#for image_vrt in ['/root/map-scraper/output/warped/BOK-129.jpg.vrt']:
-    # This code should read the VRT directly
     print(image_vrt)
     key = os.path.basename(image_vrt)[:-8]
     print(key)
     if not (key in events):
         print("Skipping {}".format(key))
         continue
-    image_world_file = os.path.join(output_dir, key + '.jgw')
-    image_file = os.path.join(output_dir, key + '.jpg')
-    im = Image.open(image_file)
-    width, height = im.size
-
     event = events[key]
 
+    center = GetCenterImage(image_vrt)
 
-    with open(image_world_file, 'r') as fp:
-       a = affine.loadsw(fp.read())
-       print(a)
-       xsize = width
-       ysize = height
-       # Process each combination of raster pixel space
-       for (col, row) in [(0, 0), (xsize, 0), (xsize, ysize), (0, ysize)]:
-           x, y = a * (col, row)
-           print('(%.6f, %.6f) (%d, %d)' % (x, y, col, row))
-
-
-    bs = [a*corner for corner in [(0,0), (xsize/2 ,ysize/2)]]
-    x1,y1 = bs[0]
-    x2,y2 = bs[1]
-
-    folium.Marker([y2, x2], popup=make_event_link(event), icon=make_icon(event)).add_to(m)
+    folium.Marker(center, popup=make_event_link(event), icon=make_icon(event)).add_to(m)
 
 tiles_loc = "https://s3-eu-west-1.amazonaws.com/rg-maps/{z}/{x}/{y}.png"
 tiles_loc_dev = "tiles/{z}/{x}/{y}.png"
