@@ -7,8 +7,8 @@ let
                       version = "0.6.0";
                       src = np.fetchFromGitHub { owner = "mpickering"
                                                ; repo = "folium"
-                                               ; rev = "027df3d30f509bee71c8093e1168f79216369b32"
-                                               ; sha256 = "0mswjkq206ri25xqn7pv6r1hv8g1rbmbygjg5jpsb4a36fy7in72";
+                                               ; rev = "d7bfd3e586b2e22e9bbd78feafe6e5005c98cd4f"
+                                               ; sha256 = "1qdhvqi7vagqbkh5v6lxmcv1ms5ixyll72v7qh05c1ans1prx4xa";
                                              }; }); };
 
   new-py = np.python3.override { packageOverrides = ext; };

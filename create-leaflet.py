@@ -77,8 +77,14 @@ for image_vrt in images:
     folium.Marker([y2, x2], popup=make_event_link(event), icon=make_icon(event)).add_to(m)
 
 tiles_loc = "https://s3-eu-west-1.amazonaws.com/rg-maps/{z}/{x}/{y}.png"
+tiles_loc_dev = "tiles/{z}/{x}/{y}.png"
 
-img = folium.raster_layers.TileLayer(tiles=tiles_loc, attr="RouteGadget", tms=True, max_native_zoom=zoom_level )
+img = folium.raster_layers.TileLayer(tiles=tiles_loc_dev
+                                    , attr="RouteGadget"
+                                    , tms=True
+                                    , max_native_zoom=zoom_level
+                                    , overlay=True
+                                    , opacity=0.7)
 
 img.add_to(m)
 
