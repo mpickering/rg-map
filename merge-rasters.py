@@ -117,7 +117,7 @@ while progress:
 # TODO: Choose a sensible ordering of the layers, perhaps put the biggest ones at the bottom.
 
 for ix, group in enumerate(loop_result):
-    sorted_group = sorted(list(group['fp']), key=lambda fp: polydict[fp].area)
+    sorted_group = sorted(list(group['fp']), key=lambda fp: polydict[fp].area, reverse=True)
     path = os.path.join(output_dir, 'groups', "{}.vrt".format(ix))
     subprocess.run(["gdalbuildvrt", path] + sorted_group)
 
