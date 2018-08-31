@@ -68,7 +68,11 @@ def MakePolygon(raster):
 
     geo_ext=ReprojectCoords(ext,src_srs,tgt_srs)
 
-    return Polygon(geo_ext)
+    # Approximately 2km buffer
+    lat_buffer_factor = (2/111)
+    long_buffer_factor = (2/73)
+
+    return Polygon(geo_ext).buffer(lat_buffer_factor)
 
 
 
