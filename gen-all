@@ -18,5 +18,6 @@ mkdir -p $OUT_DIR/results
 #TMPDIR=/tmp ./scraper.py $OUT_DIR
 ./convert_gif $OUT_DIR
 ./do_warp $OUT_DIR
+./merge-rasters.py $OUT_DIR
 ./make_tiles $OUT_DIR $ZOOM_LEVEL
 ./create-leaflet.py $OUT_DIR $ZOOM_LEVEL
