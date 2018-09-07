@@ -4,7 +4,7 @@ set -e
 trap "echo Exited!; exit;" SIGINT SIGTERM
 
 OUT_DIR=$1
-ZOOM_LEVEL=14
+ZOOM_LEVEL=16
 
 if [[ $# -eq 0 ]] ; then
     echo 'Must pass output directory'
@@ -12,11 +12,12 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 mkdir -p $OUT_DIR
+mkdir -p $OUT_DIR/scraped
 mkdir -p $OUT_DIR/warped
 mkdir -p $OUT_DIR/results
 mkdir -p $OUT_DIR/groups
 
-#TMPDIR=/tmp ./scraper.py $OUT_DIR
+TMPDIR=/tmp ./scraper.py $OUT_DIR
 ./convert_gif $OUT_DIR
 ./do_warp $OUT_DIR
 ./merge-rasters.py $OUT_DIR

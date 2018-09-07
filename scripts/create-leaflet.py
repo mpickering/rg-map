@@ -11,8 +11,10 @@ import sys
 from osgeo import gdal, osr
 
 
-output_dir = sys.argv[1]
-zoom_level = int(sys.argv[2])
+vrt_dir = sys.argv[1]
+metadata_dir = sys.argv[2]
+zoom_level = int(sys.argv[3])
+output_dir = sys.argv[4]
 
 
 def make_event_link(event):
@@ -84,22 +86,18 @@ def GetCenterImage(raster):
     return [geo_ext[0][1], geo_ext[0][0]]
 
 
-images = glob.glob(os.path.join(output_dir,'warped/*.jpg.vrt'))
+images = glob.glob(os.path.join(vrt_dir,'*.jpg.vrt'))
 
 print(len(images))
-events = pickle.load(open(os.path.join(output_dir, 'meta.pickle'), 'rb'))
 
 
 m = folium.Map([54.3781, -3.4360], zoom_start=6, tiles='OpenStreetMap')
 
 for image_vrt in images:
     print(image_vrt)
-    key = os.path.basename(image_vrt)[:-8]
+    key = os.path.splitext(os.path.splitext(os.path.basename(image_vrt))[0])[0]
+    event = pickle.load(open(os.path.join(metadata_dir,'{}.pickle'.format(key)), 'rb'))
     print(key)
-    if not (key in events):
-        print("Skipping {}".format(key))
-        continue
-    event = events[key]
 
     center = GetCenterImage(image_vrt)
     popup = folium.map.Popup(html=make_event_link(event))
@@ -120,4 +118,4 @@ img.add_to(m)
 
 folium.LayerControl().add_to(m)
 
-m.save(os.path.join('results', 'maps.html'))
+m.save(os.path.join(output_dir, 'maps.html'))

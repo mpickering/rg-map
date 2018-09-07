@@ -6,6 +6,4 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-for i in $(ls "$1/groups"/*.vrt); do
-	gdal2tiles.py -v -e -z 1-$2 "$i" "$1/tiles" || break
-done
+gdal2tiles.py -v -e -z 1-$3 -w none "$1" "$2"

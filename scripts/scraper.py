@@ -20,6 +20,11 @@ import subprocess
 from urllib.request import urlretrieve, urlopen
 from bs4 import BeautifulSoup
 import pickle
+import hashlib
+import collections
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 
 output_dir = sys.argv[1]
@@ -35,6 +40,10 @@ def write_world_file(filename, world_dict):
         write_line(index)
     f.close()
 
+def make_hash(o):
+
+  return hashlib.sha256(repr(o).encode('utf-8')).hexdigest()
+
 
 # Get the list of available routegadgets from the main page
 page = urlopen("http://www.routegadget.co.uk/")
@@ -43,19 +52,16 @@ urls_raw = [li.find('a').get('href') for li in soup.find_all('li')]
 # They all end with rg2, stripping that off is more convenient.
 urls = list(map((lambda x: x[:-3]), urls_raw))
 
-print ("{} URLS fetched".format(len(urls)))
+eprint ("{} URLS fetched".format(len(urls)))
 
-print ("Starting scraper")
+eprint ("Starting scraper")
 display = Display(visible=0, size=(800, 600))
 display.start()
 
-meta = {}
 
-
-
-for base_url in urls:
+for base_url in urls[:4]:
     driver = webdriver.Firefox()
-    print ("Processing {}".format(base_url))
+    eprint ("Processing {}".format(base_url))
     driver.get(base_url + "rg2/")
     time.sleep(10)
     WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.ID, 'rg2-event-list')))
@@ -69,23 +75,19 @@ for base_url in urls:
         file_name = (club  + "-" + mfn).replace("/","-").replace(" ","-")
         event['map_url'] = base_url + 'kartat/' + mfn
 
-        # Strip the extension
-        key = os.path.splitext(file_name)[0]
-        meta[key] = event
-        print(name, event['date'])
+        event['base_url'] = base_url
 
-        out_filename = os.path.join(output_dir, file_name)
-        # Don't redownload if we already have it
-        if (os.path.isfile(out_filename)):
-            print ("Using cached file: {}".format(out_filename))
-        else:
-            write_world_file(file_name, event['worldfile'])
-            urlretrieve(base_url + 'kartat/' + mfn, out_filename)
+        # Use an ordered structure here so the serialisation is consistent.
+        res = collections.OrderedDict([(k, event[k]) for k in ['kartatid', 'worldfile','mapid','date', 'map_url','mapfilename'
+                                      , 'base_url', 'name', 'club', 'format', 'rawtype'] ])
+
+        # Need this to be ordered as well so it always serialises in the same order
+        res['worldfile'] = collections.OrderedDict(sorted(res['worldfile'].items()))
+
+        h = make_hash([res['name'], res['date'], res['base_url'], sorted(res['worldfile'].items()), res['club']])
+
+        pickle.dump(res, open(os.path.join(output_dir, "{}.pickle".format(h)), 'wb'))
+        eprint(name, event['date'])
+
 
     driver.close()
-
-# Convert all .gif files to .jpg
-pickle.dump(meta, open(os.path.join(output_dir, 'meta.pickle'), 'wb'))
-
-
-

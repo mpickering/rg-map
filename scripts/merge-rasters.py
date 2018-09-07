@@ -10,6 +10,7 @@ import pprint
 import subprocess
 
 output_dir=sys.argv[1]
+result_dir=sys.argv[2]
 
 def GetExtent(gt,cols,rows):
     ''' Return list of corner coordinates from a geotransform
@@ -76,7 +77,7 @@ def MakePolygon(raster):
 
 
 
-images = glob.glob(os.path.join(output_dir,'warped/*.jpg.vrt'))
+images = glob.glob(os.path.join(output_dir,'*.jpg.vrt'))
 
 polydict = dict([(fp, MakePolygon (fp)) for fp in images])
 
@@ -122,7 +123,7 @@ while progress:
 
 for ix, group in enumerate(loop_result):
     sorted_group = sorted(list(group['fp']), key=lambda fp: polydict[fp].area, reverse=True)
-    path = os.path.join(output_dir, 'groups', "{}.vrt".format(ix))
+    path = os.path.join(result_dir, "{}.vrt".format(ix))
     subprocess.run(["gdalbuildvrt", path] + sorted_group)
 
 

@@ -1,0 +1,9 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p awscli
+
+if [[ $# -eq 0 ]] ; then
+    echo 'Must pass output directory'
+    exit 1
+fi
+
+aws s3 sync $1/tiles s3://rg-maps
