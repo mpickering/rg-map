@@ -53,21 +53,6 @@ mainFlow = proc () -> do
   mergeDirs -< [leaflet, tiles]
 
 
-nixScript = nixScriptX False
-
-impureNixScript :: ArrowFlow eff ex arr => (a -> [Param]) -> arr a CS.Item
-impureNixScript = nixScriptX True
-
-nixScriptX :: ArrowFlow eff ex arr => Bool -> (a -> [Param]) -> arr a CS.Item
-nixScriptX impure params =
-  external' props $ \args -> ExternalTask
-        { _etCommand = "perl"
-        , _etParams = params args
-        , _etWriteToStdOut = NoOutputCapture
-        , _etEnv = [("NIX_PATH", envParam "NIX_PATH")] }
-  where
-    props = def { ep_impure = impure }
-
 -- Need to mark this as impure
 scrape = nixScript (\dir -> [contentParam (dir CS.^</> [relfile|scraper.py|]), outParam ])
 
@@ -89,6 +74,21 @@ makeTiles = nixScript (\(script, dir) -> [ contentParam (script ^</> [relfile|ma
 makeLeaflet = nixScript (\(script, vrt_dir, meta_dir) ->
                 [ contentParam (script ^</> [relfile|create-leaflet.py|])
                 , contentParam vrt_dir, contentParam meta_dir, textParam "16", outParam ])
+
+nixScript = nixScriptX False
+
+impureNixScript :: ArrowFlow eff ex arr => (a -> [Param]) -> arr a CS.Item
+impureNixScript = nixScriptX True
+
+nixScriptX :: ArrowFlow eff ex arr => Bool -> (a -> [Param]) -> arr a CS.Item
+nixScriptX impure params =
+  external' props $ \args -> ExternalTask
+        { _etCommand = "perl"
+        , _etParams = params args
+        , _etWriteToStdOut = NoOutputCapture
+        , _etEnv = [("NIX_PATH", envParam "NIX_PATH")] }
+  where
+    props = def { ep_impure = impure }
 
 
 
