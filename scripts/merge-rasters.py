@@ -8,6 +8,7 @@ import os
 import json
 import pprint
 import subprocess
+import hashlib
 
 output_dir=sys.argv[1]
 result_dir=sys.argv[2]
@@ -121,9 +122,16 @@ while progress:
 # Make VRTs
 # TODO: Choose a sensible ordering of the layers, perhaps put the biggest ones at the bottom.
 
+def make_hash(o):
+  return hashlib.sha256(repr(o).encode('utf-8')).hexdigest()
+
 for ix, group in enumerate(loop_result):
     sorted_group = sorted(list(group['fp']), key=lambda fp: polydict[fp].area, reverse=True)
-    path = os.path.join(result_dir, "{}.vrt".format(ix))
+
+    # Name the file after the hash to avoid a new group changing file
+    # names of the tiles.
+    h = make_hash(sorted_group)
+    path = os.path.join(result_dir, "{}.vrt".format(h))
     subprocess.run(["gdalbuildvrt", path] + sorted_group)
 
 
