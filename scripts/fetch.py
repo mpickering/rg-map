@@ -21,6 +21,9 @@ from urllib.request import urlretrieve, urlopen
 from bs4 import BeautifulSoup
 import pickle
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 
 output_dir = os.path.join(sys.argv[1])
 metadata_path=sys.argv[2]
@@ -51,3 +54,4 @@ file_name = file_hash + file_ext
 out_filename = os.path.join(output_dir, file_name)
 write_world_file(file_name, event['worldfile'])
 urlretrieve(event['map_url'],  out_filename)
+eprint(club, name, mfn, out_filename)
