@@ -40,12 +40,12 @@ mainFlow = proc () -> do
   script_dir <- copyDirToStore -< ((DirectoryContent [absdir|/root/map-scraper/scripts/|]), Nothing)
 
   meta_dir <- step All <<< scrape -< script_dir
-  (_, keys) <- listDirContents -< meta_dir
+  keys <- splitDir -< meta_dir
   maps <- mapA (fetch) -< [( script_dir, event) | event <- keys]
   mapJpgs <- mapA convertToGif -< [(script_dir, m) | m <- maps]
   merge_dir <- mergeDirs' <<< mapA (step All) <<< mapA warp -< [(script_dir, jpg) | jpg <- mapJpgs ]
   vrt_dir <- step All <<< mergeRasters -< (script_dir, merge_dir)
-  (_, merged_vrts) <- listDirContents -< vrt_dir
+  merged_vrts <- splitDir -< vrt_dir
   tiles <- mergeDirs' <<< mapA (step All) <<< mapA makeTiles -< [(script_dir, vrt) | vrt <- merged_vrts]
 
   leaflet <- step All <<< makeLeaflet -< ( script_dir, merge_dir, meta_dir)
@@ -54,7 +54,7 @@ mainFlow = proc () -> do
 
 
 -- Need to mark this as impure
-scrape = nixScript (\dir -> [contentParam (dir CS.^</> [relfile|scraper.py|]), outParam ])
+scrape = impureNixScript (\dir -> [contentParam (dir CS.^</> [relfile|scraper.py|]), outParam ])
 
 fetch = nixScript (\(script, metadata) -> [ contentParam (script ^</> [relfile|fetch.py|])
                                           , outParam, contentParam metadata ])
@@ -110,6 +110,21 @@ mergeDirs' = proc inDirs -> do
         exist <- fileExist target
         when (not exist) (createLink (toFilePath absFile) target)
     ) -< paths
+
+splitDir :: ArrowFlow eff ex arr => arr (Content Dir) ([Content File])
+splitDir = proc dir -> do
+  (_, fs) <- listDirContents -< dir
+  returnA -< fs
+--  mapA reifyFile -< fs
+
+
+-- Put a file, which might be a pointer into a dir, into its own store
+-- location.
+reifyFile :: ArrowFlow eff ex arr => arr (Content File) (Content File)
+reifyFile = proc f -> do
+  file <- getFromStore return -< f
+  putInStoreAt (\d fn -> copyFile fn d) -< (file, CS.contentFilename f)
+
 
 storePath :: ArrowFlow eff ex arr => arr (Content Dir) (Path Abs Dir)
 storePath = internalManipulateStore (\cs d -> return (CS.itemPath cs (CS.contentItem d)))
