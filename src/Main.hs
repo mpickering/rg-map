@@ -114,8 +114,7 @@ mergeDirs' = proc inDirs -> do
 splitDir :: ArrowFlow eff ex arr => arr (Content Dir) ([Content File])
 splitDir = proc dir -> do
   (_, fs) <- listDirContents -< dir
-  returnA -< fs
---  mapA reifyFile -< fs
+  mapA reifyFile -< fs
 
 
 -- Put a file, which might be a pointer into a dir, into its own store
