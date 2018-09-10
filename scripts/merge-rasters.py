@@ -10,8 +10,8 @@ import pprint
 import subprocess
 import hashlib
 
-output_dir=sys.argv[1]
-result_dir=sys.argv[2]
+result_dir=sys.argv[1]
+images=sys.argv[2:]
 
 def GetExtent(gt,cols,rows):
     ''' Return list of corner coordinates from a geotransform
@@ -78,7 +78,7 @@ def MakePolygon(raster):
 
 
 
-images = glob.glob(os.path.join(output_dir,'*.jpg.vrt'))
+#images = glob.glob(os.path.join(output_dir,'*.jpg.vrt'))
 
 polydict = dict([(fp, MakePolygon (fp)) for fp in images])
 

@@ -39,56 +39,61 @@ mainFlow :: SimpleFlow () (Content Dir)
 mainFlow = proc () -> do
   script_dir <- copyDirToStore -< ((DirectoryContent [absdir|/root/map-scraper/scripts/|]), Nothing)
 
-  meta_dir <- step All <<< scrape -< script_dir
+  meta_dir <- step All <<< scrape -< (script_dir, ())
   keys <- splitDir -< meta_dir
   maps <- mapA (fetch) -< [( script_dir, event) | event <- keys]
   mapJpgs <- mapA convertToGif -< [(script_dir, m) | m <- maps]
   merge_dir <- mergeDirs' <<< mapA (step All) <<< mapA warp -< [(script_dir, jpg) | jpg <- mapJpgs ]
-  vrt_dir <- step All <<< mergeRasters -< (script_dir, merge_dir)
+  toMerge <- splitDir -< merge_dir
+  vrt_dir <- step All <<< mergeRasters -< (script_dir, toMerge)
   merged_vrts <- splitDir -< vrt_dir
   tiles <- mergeDirs' <<< mapA (step All) <<< mapA makeTiles -< [(script_dir, vrt) | vrt <- merged_vrts]
 
-  leaflet <- step All <<< makeLeaflet -< ( script_dir, merge_dir, meta_dir)
+  leaflet <- step All <<< makeLeaflet -< ( script_dir, (merge_dir, meta_dir))
 
   mergeDirs -< [leaflet, tiles]
 
 
 -- Need to mark this as impure
-scrape = impureNixScript (\dir -> [contentParam (dir CS.^</> [relfile|scraper.py|]), outParam ])
+scrape = impureNixScript [relfile|scraper.py|] [[relfile|shell.nix|]]
+          (\() -> [ outParam ])
 
-fetch = nixScript (\(script, metadata) -> [ contentParam (script ^</> [relfile|fetch.py|])
-                                          , outParam, contentParam metadata ])
+fetch = nixScript [relfile|fetch.py|] [[relfile|shell.nix|]] (\metadata -> [ outParam, contentParam metadata ])
 
-convertToGif = nixScript (\(script, dir) -> [ contentParam (script ^</> [relfile|convert_gif|])
-                                            , pathParam (IPItem dir), outParam ])
+convertToGif = nixScript [relfile|convert_gif|] [] (\dir -> [ pathParam (IPItem dir), outParam ])
 
-warp = nixScript (\(script, dir) -> [ contentParam (script ^</> [relfile|do_warp|])
-                                    , pathParam (IPItem dir), outParam ])
+warp = nixScript [relfile|do_warp|] [] (\dir -> [ pathParam (IPItem dir), outParam ])
 
-mergeRasters = nixScript (\(script, dir) -> [ contentParam (script ^</> [relfile|merge-rasters.py|])
-                                            , contentParam dir, outParam ])
+mergeRasters = nixScript [relfile|merge-rasters.py|] [[relfile|merge-rasters.nix|]] (\rs -> outParam : map contentParam rs )
 
-makeTiles = nixScript (\(script, dir) -> [ contentParam (script ^</> [relfile|make_tiles|])
-                                         , contentParam dir, outParam, textParam "16" ])
+makeTiles = nixScript [relfile|make_tiles|] [] (\dir -> [ contentParam dir, outParam, textParam "16" ])
 
-makeLeaflet = nixScript (\(script, vrt_dir, meta_dir) ->
-                [ contentParam (script ^</> [relfile|create-leaflet.py|])
-                , contentParam vrt_dir, contentParam meta_dir, textParam "16", outParam ])
+makeLeaflet = nixScript [relfile|create-leaflet.py|] [[relfile|leaflet.nix|]] (\(vrt_dir, meta_dir) ->
+                [ contentParam vrt_dir, contentParam meta_dir, textParam "16", outParam ])
 
 nixScript = nixScriptX False
 
-impureNixScript :: ArrowFlow eff ex arr => (a -> [Param]) -> arr a CS.Item
+impureNixScript :: ArrowFlow eff ex arr => Path Rel File -> [Path Rel File]
+                    -> (a -> [Param]) -> arr (Content Dir, a) CS.Item
 impureNixScript = nixScriptX True
 
-nixScriptX :: ArrowFlow eff ex arr => Bool -> (a -> [Param]) -> arr a CS.Item
-nixScriptX impure params =
-  external' props $ \args -> ExternalTask
+
+--contentParam (
+nixScriptX :: ArrowFlow eff ex arr => Bool
+                                   -> Path Rel File
+                                   -> [Path Rel File]
+                                   -> (a -> [Param])
+                                   -> arr (Content Dir, a) CS.Item
+nixScriptX impure script scripts params = proc (scriptDir, a) -> do
+  env <- mergeFiles -< absScripts scriptDir
+  external' props (\(s, args) -> ExternalTask
         { _etCommand = "perl"
-        , _etParams = params args
+        , _etParams = contentParam (s ^</> script) : params args
         , _etWriteToStdOut = NoOutputCapture
-        , _etEnv = [("NIX_PATH", envParam "NIX_PATH")] }
+        , _etEnv = [("NIX_PATH", envParam "NIX_PATH")] }) -< (env, a)
   where
     props = def { ep_impure = impure }
+    absScripts sd = map (sd ^</>) (script : scripts)
 
 
 
