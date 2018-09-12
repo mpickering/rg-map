@@ -33,11 +33,11 @@ main = do
         putStrLn $ "SUCCESS"
         putStrLn $ toFilePath out
 
--- | This flow takes a number, builds a C program to process that number,
--- and returns the program's output.
 mainFlow :: SimpleFlow () (Content Dir)
 mainFlow = proc () -> do
-  script_dir <- copyDirToStore -< ((DirectoryContent [absdir|/root/map-scraper/scripts/|]), Nothing)
+  cwd <- stepIO (const getCurrentDir) -< ()
+
+  script_dir <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|scripts/|]), Nothing)
 
   meta_dir <- step All <<< scrape -< (script_dir, ())
   keys <- splitDir -< meta_dir
