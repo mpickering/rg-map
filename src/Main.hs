@@ -131,7 +131,9 @@ reifyFile = proc f -> do
 
 
 storePath :: ArrowFlow eff ex arr => arr (Content Dir) (Path Abs Dir)
-storePath = internalManipulateStore (\cs d -> return (CS.itemPath cs (CS.contentItem d)))
+--storePath = internalManipulateStore (\cs d -> return (CS.itemPath cs (CS.contentItem d)))
+
+storePath = getFromStore return
 
 copyDirFromStore :: ArrowFlow eff ex arr => Path b1 Dir -> arr (Content Dir) ()
 copyDirFromStore dest = getFromStore (\p -> copyDirRecur p dest)
