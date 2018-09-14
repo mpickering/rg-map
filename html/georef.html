@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <title>jQuery Hello World</title>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+
+  </head>
+
+  <body>
+
+  <script type="text/javascript">
+
+    $(document).ready(function(){
+			$.ajax( "https://www.googleapis.com/storage/v1/b/rg-maps-raw/o/manifest.json",
+				{ dataType: "json"
+				, type : 'GET'
+				, error: function(err, s1, s3) { console.log(err, s1, s3) }
+				, success: function( data ) {
+				$.getJSON(data.mediaLink, function(data){
+  			var items = [];
+				console.log(data)
+    		$.each( data, function( key, val ) {
+					console.log(key, val)
+        	items.push( "<li id='" + key + "'>" + val.name + "</li>" );
+          	});
+
+            $( "<ul/>", {
+                  "class": "my-new-list",
+                      html: items.join( "" )
+						}).appendTo( "body" );
+} )}} );
+    });
+
+  </script>
+
+  This is Hello World by HTML
+
+  <div id="msgid">
+  </div>
+
+  </body>
+  </html>
+
+
