@@ -1,4 +1,6 @@
 from flask import abort
+from flask import make_response
+from flask_cors import CORS, cross_origin
 from google.cloud import storage
 import jsonschema
 
@@ -21,9 +23,15 @@ worldFileSchema = {
     }
 
 
+
 def upload_world_file(request):
-    if request.method != 'POST':
-        return abort(405)
+    if (request.method == 'OPTIONS'):
+        r = make_response("")
+        r.headers['Access-Control-Allow-Origin'] = "*"
+        r.headers["Access-Control-Allow-Methods"] ="GET, POST, PATCH, PUT, DELETE, OPTIONS"
+        r.headers["Access-Control-Allow-Headers"] = "Origin, Content-Type, X-Auth-Token"
+        r.headers['Access-Control-Max-Age'] = "3600"
+        return r
 
     request_json = request.get_json()
     jsonschema.validate(request_json, worldFileSchema)
@@ -35,5 +43,9 @@ def upload_world_file(request):
     f = "\n".join(["%.30f" % request_json['world_file'][index] for index in ['A', 'D', 'B', 'E', 'C', 'F']])
 
     blob.upload_from_string(f)
-
-    return str(request_json)
+    r = make_response(str(request_json))
+    r.headers['Access-Control-Allow-Origin'] = "*"
+    r.headers["Access-Control-Allow-Methods"] ="GET, POST, PATCH, PUT, DELETE, OPTIONS"
+    r.headers["Access-Control-Allow-Headers"] = "Origin, Content-Type, X-Auth-Token"
+    r.headers['Access-Control-Max-Age'] = "3600"
+    return r
