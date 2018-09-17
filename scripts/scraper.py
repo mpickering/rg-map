@@ -59,14 +59,14 @@ display = Display(visible=0, size=(800, 600))
 display.start()
 
 
-for base_url in urls:
+for base_url in [urls[0]]:
     driver = webdriver.Firefox()
     eprint ("Processing {}".format(base_url))
     driver.get(base_url + "rg2/")
     time.sleep(10)
     WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.ID, 'rg2-event-list')))
     # Query information about the georeferenced events.
-    v = driver.execute_script("return rg2.events.events.filter(x => x.worldfile.valid)")
+    v = driver.execute_script("return rg2.events.events")
     for event in v:
         mfn = event['mapfilename']
         club = event['club']

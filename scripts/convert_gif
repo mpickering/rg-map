@@ -1,8 +1,10 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i bash -p imagemagick
+#! nix-shell -i bash -p imagemagick -p zsh
 
 echo "Starting convert_gif"
-shopt -s nullglob
+echo $1
+echo $2
+shopt -s nullglob dotglob
 
 if [[ $# -eq 0 ]] ; then
     echo 'Must pass output directory'
@@ -11,14 +13,18 @@ fi
 
 for file in "$1/*.gif"
 do
+  [ -e $file  ] || continue
   mogrify -format jpg $file -path $2
 done
 for file in "$1/*.jpg"
 do
+  echo This message goes to stderr >&2
+  [ -e $file  ] || continue
   cp $file $2
 done
 for file in "$1/*.jgw"
 do
+  [ ! -z $file  ] || continue
   cp $file $2
 done
 

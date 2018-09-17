@@ -1,0 +1,14 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p google-cloud-sdk
+#
+if [[ $# -eq 0 ]] ; then
+    echo 'Must pass output directory'
+    exit 1
+fi
+
+gcloud alpha functions deploy send_verification_email --trigger-event=google.storage.object.finalize \
+    --trigger-resource=rg-maps-world-files --region=europe-west1 --runtime=python37 --source=$1
+
+
+
+

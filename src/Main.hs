@@ -33,6 +33,28 @@ main = do
         putStrLn $ "SUCCESS"
         putStrLn $ toFilePath out
 
+-- | Filter a list given an arrow filter
+partitionA :: ArrowChoice a => a b (Either c d) -> a [b] ([c], [d])
+partitionA f = proc xs ->
+  case xs of
+    [] -> returnA -< ([], [])
+    (y:ys) -> do
+      b <- f -< y
+      case b of
+        Left c -> ((second (partitionA f)) >>> arr (\(c, (cs, ds)) -> (c:cs, ds))) -< (c,ys)
+        Right d -> ((second (partitionA f)) >>> arr (\(d, (cs, ds)) -> (cs, d:ds))) -< (d, ys)
+
+boolChoice :: ArrowFlow eff ex a => a CS.Item (Either CS.Item (Content Dir))
+boolChoice = proc dir -> do
+  str <- readString_ -< dir
+  case str of
+    '0':_ -> returnA -< (Left dir)
+    '1':_ -> returnA -< (Right (All dir))
+    _ -> returnA -< error str
+
+
+
+
 mainFlow :: SimpleFlow () (Content Dir)
 mainFlow = proc () -> do
   cwd <- stepIO (const getCurrentDir) -< ()
@@ -41,7 +63,28 @@ mainFlow = proc () -> do
 
   meta_dir <- step All <<< scrape -< (script_dir, ())
   keys <- splitDir -< meta_dir
-  maps <- mapA (fetch) -< [( script_dir, event) | event <- keys]
+  (maps, raw_maps) <- partitionA boolChoice <<< mapA (fetch) -< [( script_dir, event) | event <- keys]
+  raw_map_dir <- mergeDirs <<< mapA rmOut -< raw_maps
+  manifest_dir <- createManifest -< (script_dir, raw_map_dir)
+  uploadRawMaps -< (script_dir, All manifest_dir)
+
+  stepIO print <<< storePath -< All manifest_dir
+
+  georefFlow -< (script_dir, meta_dir, maps)
+
+{-
+Plan
+
+1. Upload a big JSON dictionary which lists all the non-georeferenced maps
+2. Display this list in the browser, click on an entry to load the map into georeferencing pane
+3. Upload sends file to google cloud function which puts the file in a staging area
+4. Simple web interface grabs jobs from the staging area and checks the georeferencing is correct
+5. World file is pushed to bucket which is then used for master.
+-}
+
+
+georefFlow :: SimpleFlow (Content Dir, Content Dir, [CS.Item]) (Content Dir)
+georefFlow = proc (script_dir, meta_dir, maps) -> do
   mapJpgs <- mapA convertToGif -< [(script_dir, m) | m <- maps]
   merge_dir <- mergeDirs' <<< mapA (step All) <<< mapA warp -< [(script_dir, jpg) | jpg <- mapJpgs ]
   toMerge <- splitDir -< merge_dir
@@ -55,10 +98,10 @@ mainFlow = proc () -> do
 
 
 -- Need to mark this as impure
-scrape = impureNixScript [relfile|scraper.py|] [[relfile|shell.nix|]]
+scrape = nixScript [relfile|scraper.py|] [[relfile|shell.nix|]]
           (\() -> [ outParam ])
 
-fetch = nixScript [relfile|fetch.py|] [[relfile|shell.nix|]] (\metadata -> [ outParam, contentParam metadata ])
+fetch = nixScriptWithOutput [relfile|fetch.py|] [[relfile|shell.nix|]] (\metadata -> [ outParam, contentParam metadata ])
 
 convertToGif = nixScript [relfile|convert_gif|] [] (\dir -> [ pathParam (IPItem dir), outParam ])
 
@@ -71,25 +114,32 @@ makeTiles = nixScript [relfile|make_tiles|] [] (\dir -> [ contentParam dir, outP
 makeLeaflet = nixScript [relfile|create-leaflet.py|] [[relfile|leaflet.nix|]] (\(vrt_dir, meta_dir) ->
                 [ contentParam vrt_dir, contentParam meta_dir, textParam "16", outParam ])
 
-nixScript = nixScriptX False
+uploadRawMaps = impureNixScript [relfile|upload-raw-maps|] [] (\dir -> [ contentParam dir ])
+
+createManifest = nixScript [relfile|create-manifest.py|] [] (\dir -> [ outParam, contentParam dir ])
+
+nixScript = nixScriptX False NoOutputCapture
+
+nixScriptWithOutput = nixScriptX False StdOutCapture
 
 impureNixScript :: ArrowFlow eff ex arr => Path Rel File -> [Path Rel File]
                     -> (a -> [Param]) -> arr (Content Dir, a) CS.Item
-impureNixScript = nixScriptX True
+impureNixScript = nixScriptX True NoOutputCapture
 
 
 --contentParam (
 nixScriptX :: ArrowFlow eff ex arr => Bool
+                                   -> OutputCapture
                                    -> Path Rel File
                                    -> [Path Rel File]
                                    -> (a -> [Param])
                                    -> arr (Content Dir, a) CS.Item
-nixScriptX impure script scripts params = proc (scriptDir, a) -> do
+nixScriptX impure std script scripts params = proc (scriptDir, a) -> do
   env <- mergeFiles -< absScripts scriptDir
   external' props (\(s, args) -> ExternalTask
         { _etCommand = "perl"
         , _etParams = contentParam (s ^</> script) : params args
-        , _etWriteToStdOut = NoOutputCapture
+        , _etWriteToStdOut = std
         , _etEnv = [("NIX_PATH", envParam "NIX_PATH")] }) -< (env, a)
   where
     props = def { ep_impure = impure }
@@ -115,6 +165,10 @@ mergeDirs' = proc inDirs -> do
         exist <- fileExist target
         when (not exist) (createLink (toFilePath absFile) target)
     ) -< paths
+
+
+rmOut :: ArrowFlow eff ex arr => arr (Content Dir) (Content Dir)
+rmOut = proc dir -> do mergeFiles <<< globDir -< (dir, "*.pickle")
 
 splitDir :: ArrowFlow eff ex arr => arr (Content Dir) ([Content File])
 splitDir = proc dir -> do

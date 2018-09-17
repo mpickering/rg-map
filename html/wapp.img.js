@@ -6,6 +6,7 @@
 	this.controlPoints = [];
 	this.lastPoint = {};
 
+
 	// Source map layer
 	this.sourceLayer = this.addSource(name, dataURL, mapimg);
 	mapimg.getView().setZoom(7)
@@ -29,7 +30,7 @@ wapp.img.prototype.addSource = function(name, dataURL, map)
 	var layers = {};
 
 	layers.image = new ol.layer.Image(
-	{	name: name.replace(/\.jpg$|\.png$|\.jpeg$/i,""),
+	{	name: name,
 		opacity: 1,
 		source: new ol.source.GeoImage(
 		{	url: dataURL,
@@ -39,7 +40,7 @@ wapp.img.prototype.addSource = function(name, dataURL, map)
 		})
 	})
 	// Add Layer
-	map.getLayers().insertAt(0,layers.image);
+	map.addLayer(layers.image);
 
 	// Controls points
 	var features = new ol.Collection();
@@ -319,6 +320,7 @@ wapp.img.prototype.calc = function()
 
 	if (this.controlPoints.length > 1)
 	{
+    $("#submit-info").prop('disabled', false)
 		var xy=[], XY=[];
 		for (var i=0; i<this.controlPoints.length; i++)
 		{	//var p = this.controlPoints[i].img.getGeometry().getCoordinates();
@@ -336,7 +338,7 @@ wapp.img.prototype.calc = function()
 		if (!this.destLayer.image)
 		{	this.destLayer.image = new ol.layer.Image(
 			{	name: this.sourceLayer.image.get("name"),
-				opacity: 1,
+				opacity: 0.75,
 				source: new ol.source.GeoImage(
 				{	image: this.sourceLayer.image.getSource().getGeoImage(),
 					imageCenter: t,
@@ -345,7 +347,7 @@ wapp.img.prototype.calc = function()
 					//projection: pixelProjection
 				})
 			})
-			wapp.map.getLayers().insertAt(wapp.map.getLayers().getLength()-2,this.destLayer.image);
+      wapp.map.addLayer(this.destLayer.image)
 			this.destLayer.image.getSource().setCrop()
 		}
 		else

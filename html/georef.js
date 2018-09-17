@@ -36,6 +36,18 @@ var pixelProjection = new ol.proj.Projection(
 	extent: [-100000, -100000, 100000, 100000]
 });
 
+$.postJSON = function(url, data, callback) {
+    return jQuery.ajax({
+        'method': "POST",
+        'url': url,
+        'contentType': 'application/json',
+        'data': JSON.stringify(data),
+        'dataType': 'json',
+        'success': callback
+    });
+};
+
+
 
 /** The webapp
 */
@@ -56,9 +68,30 @@ var wapp =
 				wapp.load(n, $("#loader input[type=text]").val());
 			});
 
+    $("#submit-info").click( function()
+        { var payload = { world_file: wapp.getWorldFile()
+                        , hash: wapp.current.event['hash'] }
+          $.ajax({
+            url:"http://europe-west1-rg-maps-216117.cloudfunctions.net/upload_world_file",
+            type:"POST",
+            data:JSON.stringify(payload),
+            contentType:"application/json; charset=utf-8",
+            dataType:"json",
+            success: function(){
+            } })
+           });
+
+    $("#clear").click(function(){ wapp.clearAll()});
+
+    $('#event-search').on('input', function(ev) {
+      val = $("#event-search").val()
+      wapp.setEvents(val)
+    });
+
 		// Set the maps
 		this.setMap();
 		this.setImageMap();
+    this.populateEvents();
 
 		// Decode source
 		var p={}, hash = document.location.search;
@@ -100,6 +133,20 @@ wapp.getTopLeft = function(source) {
   return tl;
 };
 
+wapp.getWorldFile = function(){
+  var source = wapp.current.destLayer.image.getSource();
+  var tl = wapp.getTopLeft(source).getCoordinates()
+  var scale = source.getScale()
+  var world_file =
+    { A: scale[0]
+    , D: -(Math.tan(source.getRotation()) * scale[0])
+    , B: -(Math.tan(source.getRotation()) * scale[1])
+    , E: -scale[1]
+    , C: tl[0]
+    , F: tl[1]
+  }
+  return world_file }
+
 /** Distance projetee par rapport au centre
 */
 wapp.distProj = function(dist, c) {
@@ -124,7 +171,70 @@ wapp.distProj = function(dist, c) {
 }
 })();
 
+filterEvent = function (key, ev){
+   return (((ev.name).search(key)  != -1) || ((ev.club).search(key) != -1) || ((ev.date).search(key)) != -1)
+}
+
 $(document).ready(function(){ wapp.initialize(); });
+
+wapp.populateEvents = function(){
+  $.ajax( "https://www.googleapis.com/storage/v1/b/rg-maps-raw/o/manifest.json",
+				{ dataType: "json"
+				, type : 'GET'
+				, error: function(err, s1, s3) { console.log(err, s1, s3) }
+				, success: function( data ) {
+				$.getJSON(data.mediaLink, function(data){
+          wapp.events = data;
+          wapp.setEvents() })
+        }})}
+
+
+
+wapp.setEvents =  function(key) {
+        if (key) {
+          data = wapp.events.filter(ev => filterEvent(key, ev))
+        } else { data = wapp.events }
+        data = data.slice(0,10)
+        var items = []
+        $("#event-list").html("")
+    		$.each( data, function( key, val ) {
+					console.log(key, val)
+        	items.push( "<div class='raised-box search-item' id='" + key + "'>" + val.name + "</div>" );
+          	});
+
+            $( "<div/>", {
+                  "class": "my-new-list",
+                      html: items.join( "" )
+						}).appendTo( "#event-list" );
+        $.each(data, function(key, val) {
+          $("#" + key).click(function(_){wapp.loadEvent(data[key])})
+        })
+
+  }
+
+wapp.clearAll = function (){
+  if (wapp.current){
+    $("#submit-info").prop('disabled', true)
+    $("#name").html("")
+    $("#club").html("")
+    this.mapimg.removeLayer(wapp.current.sourceLayer.image)
+    this.mapimg.removeLayer(wapp.current.sourceLayer.vector)
+    this.mapimg.removeInteraction(wapp.current.sourceLayer.iclick)
+		this.mapimg.getView().setRotation(0);
+
+    this.map.removeLayer(wapp.current.destLayer.vector)
+    this.map.removeLayer(wapp.current.destLayer.image)
+    this.map.removeInteraction(wapp.current.destLayer.iclick)
+  }}
+
+wapp.loadEvent = function(ev){
+  wapp.clearAll()
+  wapp.load(ev.mapfilename, ev.map_url)
+  $("#name").html(ev.name)
+  $("#club").html(ev.club)
+  wapp.current.event = ev
+}
+
 
 /** Define the reference map
 */
@@ -161,6 +271,34 @@ wapp.setMap = function()
 			layers: layers
 		});
 
+
+  var geocoder = new Geocoder('nominatim', {
+    provider: 'osm',
+    lang: 'en-GB',
+    placeholder: 'Search for ...',
+    targetType: 'text-input',
+    limit: 5,
+    keepOpen: false,
+    preventDefault: true
+  });
+  this.map.addControl(geocoder);
+
+  geocoder.on('addresschosen', function(evt) {
+    console.log(evt)
+    console.log(evt.coordinate)
+    if (evt.bbox){
+      map.getView().fit(evt.bbox, { duration: 500 });
+    } else {
+      resolution = 2.388657133911758;
+      duration = 500;
+      map.getView().animate(
+        { duration, resolution },
+        { duration, center: evt.coordinate }
+  );
+    }
+
+  });
+
 	// Synchronize views
 	map.getView().on("change:center", function(e)
 	{	if (wapp.synchro) return;
@@ -193,6 +331,7 @@ wapp.setImageMap = function()
 			interactions: ol.interaction.defaults( { altShiftDragRotate:false, pinchRotate:false } )
 		});
 
+
 	this.mapimg.addControl(new ol.control.Toggle(
 		{	'className': "ol-fullpage",
 			toggleFn: function(b)
@@ -223,6 +362,7 @@ wapp.setImageMap = function()
 						//crop: source.getCrop(),
 						imageMask: source.getMask()
 					};
+				var source = wapp.current.destLayer.image.getSource();
         var tl = wapp.getTopLeft(source).getCoordinates()
         var scale = source.getScale()
         var world_file =

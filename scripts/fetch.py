@@ -45,13 +45,26 @@ mfn = event['mapfilename']
 club = event['club']
 name = event['name']
 
-
-_, file_ext = os.path.splitext(mfn)
 file_hash, _ = os.path.splitext(os.path.basename(metadata_path))
 
-file_name = file_hash + file_ext
 
-out_filename = os.path.join(output_dir, file_name)
-write_world_file(file_name, event['worldfile'])
-urlretrieve(event['map_url'],  out_filename)
-eprint(club, name, mfn, out_filename)
+# Mark whether we are writing a world file as the computation
+# will branch on the next step. Ultimately, we will try to fetch the world
+# file from another bucket if it's not included but not yet..
+if event['worldfile']['valid']:
+    print(0)
+    write_world_file(file_name, event['worldfile'])
+    _, file_ext = os.path.splitext(mfn)
+
+    file_name = file_hash + file_ext
+
+    out_filename = os.path.join(output_dir, file_name)
+    urlretrieve(event['map_url'],  out_filename)
+    eprint(club, name, mfn, out_filename)
+else:
+    print(1)
+    file_name = file_hash + '.pickle'
+    out_filename = os.path.join(output_dir, file_name)
+    event['hash'] = file_hash
+    pickle.dump(event, open(out_filename, 'wb'))
+
