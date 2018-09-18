@@ -1,2 +1,5 @@
-https://github.com/mpickering/staticmap/archive/master.tar.gz
+https://github.com/mpickering/staticmap/archive/6deaf2fe2f238d526c5ef64ea30df1a2c839101b.tar.gz
 sendgrid
+google-cloud-storage==1.10.0
+shapely
+pillow

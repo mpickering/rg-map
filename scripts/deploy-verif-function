@@ -7,7 +7,8 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 gcloud alpha functions deploy send_verification_email --trigger-event=google.storage.object.finalize \
-    --trigger-resource=rg-maps-world-files --region=europe-west1 --runtime=python37 --source=$1
+    --trigger-resource=rg-maps-world-files --region=europe-west1 --runtime=python37 --source=$1 \
+    --memory=1024MB
 
 
 
