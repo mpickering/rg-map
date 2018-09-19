@@ -7,8 +7,6 @@ def do_verification(request):
     h = request.args['hash']
     print(decision, h)
 
-
-
     wf_bucket = storage_client.get_bucket("rg-maps-world-files")
     verif_bucket = storage_client.get_bucket("verif-images")
     final_bucket = storage_client.get_bucket("rg-maps-final-world-files")

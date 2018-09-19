@@ -90,12 +90,16 @@ def send_verification_email(data, context):
     blob.upload_from_filename("/tmp/image.png")
     image_url = "https://storage.googleapis.com/verif-images/{}.png".format(h)
 
+    link = "http://europe-west1-rg-maps-216117.cloudfunctions.net/do_verification?decision={0}&hash={1}"
+    accept_link = link.format("accept", h)
+    reject_link = link.format("reject", h)
+
 
     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
     from_email = Email("maps@mpickering.github.io")
     to_email = Email("matthewtpickering@gmail.com")
     subject = "Georeferencer - {}".format(event['name'])
-    content = Content("text/html", '<html><body><pre>{0}</pre><a href="{1}"><img width="600" src="{1}"></a></body></html>'.format(json.dumps(event).replace(",",",\n"), image_url))
+    content = Content("text/html", '<html><body><pre>{0}</pre><a href="{1}"><img width="600" src="{1}"></a><p><a href="{2}">Accept</a></p><p><a href="{3}">Reject</a></p></body></html>'.format(json.dumps(event).replace(",",",\n"), image_url, accept_link, reject_link))
     mail = Mail(from_email, subject, to_email, content)
     response = sg.client.mail.send.post(request_body=mail.get())
     print(response.status_code)
