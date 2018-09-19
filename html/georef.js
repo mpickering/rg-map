@@ -77,7 +77,9 @@ var wapp =
             data:JSON.stringify(payload),
             contentType:"application/json; charset=utf-8",
             dataType:"json",
-            success: function(){
+            complete: function(){
+              wapp.clearAll()
+              wapp.populateEvents()
             } })
            });
 
@@ -186,10 +188,12 @@ wapp.populateEvents = function(){
 				$.getJSON(data.mediaLink, function(data){
           $.getJSON("https://www.googleapis.com/storage/v1/b/rg-maps-final-world-files/o",
             function(de_data){
-              done_events = de_data['items'].map(e => e['name'].slice(0, -4))
-              wapp.events = data.filter(function(item){
-                return done_events.indexOf(item['hash']) === -1 })
-              wapp.setEvents() })})
+              $.getJSON("https://www.googleapis.com/storage/v1/b/rg-maps-world-files/o",
+                function(we_data){
+                  done_events = (de_data['items'].concat(we_data['items'])).map(e => e['name'].slice(0, -4))
+                  wapp.events = data.filter(function(item){
+                  return done_events.indexOf(item['hash']) === -1 })
+              wapp.setEvents() })}) })
         }})}
 
 
