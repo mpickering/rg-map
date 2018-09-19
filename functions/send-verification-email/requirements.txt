@@ -1,4 +1,4 @@
-https://github.com/mpickering/staticmap/archive/6deaf2fe2f238d526c5ef64ea30df1a2c839101b.tar.gz
+https://github.com/mpickering/staticmap/archive/682dabbc7f3399a31158adcf0ce8db677a01af9f.tar.gz
 sendgrid
 google-cloud-storage==1.10.0
 shapely
