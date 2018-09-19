@@ -27,4 +27,9 @@ do
   [ ! -z $file  ] || continue
   cp $file $2
 done
+for file in "$1/*.prj"
+do
+  [ ! -z $file  ] || continue
+  cp $file $2
+done
 

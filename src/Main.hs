@@ -1,6 +1,7 @@
 {-# LANGUAGE Arrows #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TupleSections #-}
 
 module Main where
 
@@ -20,6 +21,7 @@ import System.Posix.Files
 import Control.Monad
 import Data.Foldable
 import Data.Default
+import qualified Data.Map as M
 
 main :: IO ()
 main = do
@@ -67,6 +69,23 @@ deployScripts = proc dir -> do
     -< (dir, function_dir_final)
   returnA -< ()
 
+getWorldFiles :: SimpleFlow (Content Dir) (Content Dir)
+getWorldFiles = proc script_dir -> do
+  step All <<< nixScript [relfile|get-world-files|] [] (\_ -> [outParam]) -< (script_dir, ())
+
+groupKeysPure :: (Content File, M.Map String (Content File)) -> (Content File, Maybe (Content File))
+groupKeysPure (c, map) =
+  let getHash = reverse . drop 7 . reverse
+  in (c, M.lookup (getHash (toFilePath (CS.contentFilename c))) map)
+
+
+groupKeys :: SimpleFlow ([Content File], Content Dir) ([(Content File, Maybe (Content File))])
+groupKeys = proc (cs, d) -> do
+  d' <- splitDir -< d
+  let getHash = reverse . drop 4 . reverse
+  let world_file_map = M.fromList [ (getHash (toFilePath (CS.contentFilename c)), c) | c <- d' ]
+  mapA (step groupKeysPure) -< map (, world_file_map) cs
+
 
 mainFlow :: SimpleFlow () (Content Dir)
 mainFlow = proc () -> do
@@ -75,9 +94,12 @@ mainFlow = proc () -> do
   script_dir <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|scripts/|]), Nothing)
 
   deployScripts -< script_dir
+  worldFiles <- getWorldFiles  -< script_dir
+  stepIO print -< worldFiles
 
   meta_dir <- step All <<< scrape -< (script_dir, ())
-  keys <- splitDir -< meta_dir
+  meta_keys <- splitDir -< meta_dir
+  keys <- groupKeys -< (meta_keys, worldFiles)
   (maps, raw_maps) <- partitionA boolChoice <<< mapA (fetch) -< [( script_dir, event) | event <- keys]
   raw_map_dir <- mergeDirs <<< mapA rmOut -< raw_maps
   manifest_dir <- createManifest -< (script_dir, raw_map_dir)
@@ -111,12 +133,15 @@ georefFlow = proc (script_dir, meta_dir, maps) -> do
 
   mergeDirs -< [leaflet, tiles]
 
+singleton x = [x]
+
 
 -- Need to mark this as impure
 scrape = nixScript [relfile|scraper.py|] [[relfile|shell.nix|]]
           (\() -> [ outParam ])
 
-fetch = nixScriptWithOutput [relfile|fetch.py|] [[relfile|shell.nix|]] (\metadata -> [ outParam, contentParam metadata ])
+fetch = nixScriptWithOutput [relfile|fetch.py|] [[relfile|shell.nix|]]
+          (\(metadata, mwf)-> [ outParam, contentParam metadata ] ++ (maybe [] (singleton . contentParam) mwf))
 
 convertToGif = nixScript [relfile|convert_gif|] [] (\dir -> [ pathParam (IPItem dir), outParam ])
 

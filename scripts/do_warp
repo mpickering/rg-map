@@ -8,6 +8,8 @@ fi
 
 echo "Starting warping"
 
+prj=$(ls $1/*.prj)
+
 for i in $(ls $1/*.jpg | xargs -n 1 basename ); do
-  gdalwarp -s_srs EPSG:4326 -t_srs EPSG:3857 -of VRT -co tiled=yes -dstnodata 0 "$1/$i" "$2/$i.vrt"
+  gdalwarp -s_srs $prj -t_srs EPSG:3857 -of VRT -co tiled=yes -dstnodata 0 "$1/$i" "$2/$i.vrt"
 done
