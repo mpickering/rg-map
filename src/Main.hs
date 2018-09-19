@@ -53,6 +53,17 @@ boolChoice = proc dir -> do
     _ -> returnA -< error str
 
 
+deployScripts :: SimpleFlow (Content Dir) ()
+deployScripts = proc dir -> do
+  cwd <- stepIO (const getCurrentDir) -< ()
+  function_dir <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/|]), Nothing)
+  nixScript [relfile|deploy-function|] [] (\fndir -> [contentParam fndir])
+    -< (dir, function_dir ^</> [reldir|upload-world-file|])
+  nixScript [relfile|deploy-verif-function|] [] (\fndir -> [contentParam fndir])
+    -< (dir, function_dir ^</> [reldir|send-verification-email|])
+  nixScript [relfile|deploy-final-function|] [] (\fndir -> [contentParam fndir])
+    -< (dir, function_dir ^</> [reldir|do-verification|])
+  returnA -< ()
 
 
 mainFlow :: SimpleFlow () (Content Dir)
@@ -60,6 +71,8 @@ mainFlow = proc () -> do
   cwd <- stepIO (const getCurrentDir) -< ()
 
   script_dir <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|scripts/|]), Nothing)
+
+  deployScripts -< script_dir
 
   meta_dir <- step All <<< scrape -< (script_dir, ())
   keys <- splitDir -< meta_dir
