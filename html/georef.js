@@ -184,8 +184,12 @@ wapp.populateEvents = function(){
 				, error: function(err, s1, s3) { console.log(err, s1, s3) }
 				, success: function( data ) {
 				$.getJSON(data.mediaLink, function(data){
-          wapp.events = data;
-          wapp.setEvents() })
+          $.getJSON("https://www.googleapis.com/storage/v1/b/rg-maps-final-world-files/o",
+            function(de_data){
+              done_events = de_data['items'].map(e => e['name'].slice(0, -4))
+              wapp.events = data.filter(function(item){
+                return done_events.indexOf(item['hash']) === -1 })
+              wapp.setEvents() })})
         }})}
 
 
