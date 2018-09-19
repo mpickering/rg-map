@@ -43,7 +43,7 @@ def upload_world_file(request):
     f = "\n".join(["%.30f" % request_json['world_file'][index] for index in ['A', 'D', 'B', 'E', 'C', 'F']])
 
     blob.upload_from_string(f)
-    r = make_response(str(request_json))
+    r = make_response()
     r.headers['Access-Control-Allow-Origin'] = "*"
     r.headers["Access-Control-Allow-Methods"] ="GET, POST, PATCH, PUT, DELETE, OPTIONS"
     r.headers["Access-Control-Allow-Headers"] = "Origin, Content-Type, X-Auth-Token"
