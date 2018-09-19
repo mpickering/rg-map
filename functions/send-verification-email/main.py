@@ -88,15 +88,16 @@ def send_verification_email(data, context):
     blob = bucket.blob(h + ".png")
 
     blob.upload_from_filename("/tmp/image.png")
+    image_url = "https://storage.googleapis.com/verif-images/{}.png".format(h)
 
 
-    #sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
-    #from_email = Email("maps@mpickering.github.io")
-    #to_email = Email("matthewtpickering@gmail.com")
-    #subject = "Sending with SendGrid is Fun"
-    #content = Content("text/plain", "and easy to do anywhere, even with Python")
-    #mail = Mail(from_email, subject, to_email, content)
-    #response = sg.client.mail.send.post(request_body=mail.get())
-    #print(response.status_code)
-    #print(response.body)
-    #print(response.headers)
+    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
+    from_email = Email("maps@mpickering.github.io")
+    to_email = Email("matthewtpickering@gmail.com")
+    subject = "Georeferencer - {}".format(event['name'])
+    content = Content("text/html", '<html><body><pre>{0}</pre><a href="{1}"><img width="600" src="{1}"></a></body></html>'.format(json.dumps(event).replace(",",",\n"), image_url))
+    mail = Mail(from_email, subject, to_email, content)
+    response = sg.client.mail.send.post(request_body=mail.get())
+    print(response.status_code)
+    print(response.body)
+    print(response.headers)
