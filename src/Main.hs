@@ -56,13 +56,15 @@ boolChoice = proc dir -> do
 deployScripts :: SimpleFlow (Content Dir) ()
 deployScripts = proc dir -> do
   cwd <- stepIO (const getCurrentDir) -< ()
-  function_dir <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/|]), Nothing)
+  function_dir_upload <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/upload-world-file|]), Nothing)
+  function_dir_verif <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/send-verification-email|]), Nothing)
+  function_dir_final <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/do-verification|]), Nothing)
   nixScript [relfile|deploy-function|] [] (\fndir -> [contentParam fndir])
-    -< (dir, function_dir ^</> [reldir|upload-world-file|])
+    -< (dir, function_dir_upload)
   nixScript [relfile|deploy-verif-function|] [] (\fndir -> [contentParam fndir])
-    -< (dir, function_dir ^</> [reldir|send-verification-email|])
+    -< (dir, function_dir_verif)
   nixScript [relfile|deploy-final-function|] [] (\fndir -> [contentParam fndir])
-    -< (dir, function_dir ^</> [reldir|do-verification|])
+    -< (dir, function_dir_final)
   returnA -< ()
 
 
