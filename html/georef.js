@@ -249,7 +249,8 @@ wapp.loadEvent = function(ev){
 wapp.setMap = function()
 {	// Layers to draw on the map
 	var layers =
-	[	new ol.layer.Group(
+	[
+  new ol.layer.Group(
 		{	name:"baseLayer",
 			layers: [
 				// OSM
@@ -257,12 +258,30 @@ wapp.setMap = function()
 				{	name: "OSM",
 					source: new ol.source.OSM(),
 					baseLayer: true,
+					visible: false
+				}),
+				new ol.layer.Tile(
+				{	name: "OSM-TOPO",
+          source: new ol.source.XYZ({
+            url: '//{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+          }),
+					baseLayer: true,
 					visible: true
 				}),
+
 			],
 			baseLayer: true,
 			openInLayerSwitcher: true
 		}),
+				new ol.layer.Tile(
+				{	name: "RG-maps",
+          source: new ol.source.XYZ({
+            url: '//storage.googleapis.com/rg-maps/{z}/{x}/{y}.png'
+          }),
+					baseLayer: true,
+          opacity: 0.5,
+					visible: true
+				}),
 	];
 
 	// New map
@@ -270,8 +289,8 @@ wapp.setMap = function()
 		({	target: 'map',
 			key: apiKey,
 			view: new ol.View
-			({	zoom: 12,
-				center: [259694, 6251211]
+			({	zoom: 5,
+				center: [-410696, 7097063]
 			}),
 			controls: ol.control.defaults().extend
 			([	new ol.control.LayerSwitcher()
