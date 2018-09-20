@@ -44,19 +44,23 @@ def make_hash(o):
 
   return hashlib.sha256(repr(o).encode('utf-8')).hexdigest()
 
+# Other instances of routegadgets
+inj_urls = ["https://routegadget.fvo.org.uk/"]
 
 # Get the list of available routegadgets from the main page
 page = urlopen("http://www.routegadget.co.uk/")
 soup = BeautifulSoup(page, 'html.parser').find(class_="nav__list")
 urls_raw = [li.find('a').get('href') for li in soup.find_all('li')]
 # They all end with rg2, stripping that off is more convenient.
-urls = list(map((lambda x: x[:-3]), urls_raw))
+rg_urls = list(map((lambda x: x[:-3]), urls_raw))
 
 eprint ("{} URLS fetched".format(len(urls)))
 
 eprint ("Starting scraper")
 display = Display(visible=0, size=(800, 600))
 display.start()
+
+urls = rg_urls + inj_urls
 
 
 for base_url in urls:
