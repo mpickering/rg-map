@@ -54,7 +54,8 @@ def send_verification_email(data, context):
     print('Updated: {}'.format(data['updated']))
 
 
-    map = staticmap.StaticMap(3000, 4000, 7)
+    map = staticmap.StaticMap(3000, 4000, zoom=14
+                             , url_template="https://storage.googleapis.com/gb-tiles/gb-tiles/{z}/{x}/{y}.png")
 
     with open("/tmp/map.jgw") as f:
         content = f.readlines()
