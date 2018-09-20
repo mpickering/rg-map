@@ -93,7 +93,6 @@ mainFlow = proc () -> do
 
   script_dir <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|scripts/|]), Nothing)
 
-  deployScripts -< script_dir
   worldFiles <- getWorldFiles  -< script_dir
   stepIO print -< worldFiles
 
@@ -103,11 +102,15 @@ mainFlow = proc () -> do
   (maps, raw_maps) <- partitionA boolChoice <<< mapA (fetch) -< [( script_dir, event) | event <- keys]
   raw_map_dir <- mergeDirs <<< mapA rmOut -< raw_maps
   manifest_dir <- createManifest -< (script_dir, raw_map_dir)
-  uploadRawMaps -< (script_dir, All manifest_dir)
+  uploadManifest -< (script_dir, All manifest_dir)
 
   stepIO print <<< storePath -< All manifest_dir
 
-  georefFlow -< (script_dir, meta_dir, maps)
+  res <- georefFlow -< (script_dir, meta_dir, maps)
+
+  deployScripts -< script_dir
+
+  returnA -< res
 
 {-
 Plan
@@ -154,7 +157,7 @@ makeTiles = nixScript [relfile|make_tiles|] [] (\dir -> [ contentParam dir, outP
 makeLeaflet = nixScript [relfile|create-leaflet.py|] [[relfile|leaflet.nix|]] (\(vrt_dir, meta_dir) ->
                 [ contentParam vrt_dir, contentParam meta_dir, textParam "16", outParam ])
 
-uploadRawMaps = impureNixScript [relfile|upload-raw-maps|] [] (\dir -> [ contentParam dir ])
+uploadManifest = impureNixScript [relfile|upload-manifest|] [] (\dir -> [ contentParam dir ])
 
 createManifest = nixScript [relfile|create-manifest.py|] [] (\dir -> [ outParam, contentParam dir ])
 

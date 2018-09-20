@@ -8,4 +8,4 @@ fi
 
 echo $1
 
-gsutil -m rsync -r $1 gs://rg-maps-raw
+gsutil cp $1 gs://rg-maps-raw -a public-read
