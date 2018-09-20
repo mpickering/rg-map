@@ -8,4 +8,4 @@ fi
 
 echo $1
 
-gsutil cp $1 gs://rg-maps-raw -a public-read
+gsutil cp -a public-read $1/manifest.json gs://rg-maps-raw
