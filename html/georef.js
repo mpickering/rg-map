@@ -325,15 +325,6 @@ wapp.setMap = function()
 
   });
 
-	// Synchronize views
-	map.getView().on("change:center", function(e)
-	{	if (wapp.synchro) return;
-		wapp.synchro = true;
-		var pt = wapp.current.revers(e.target.getCenter());
-		if (pt) wapp.mapimg.getView().setCenter(pt)
-		wapp.synchro = false;
-	});
-
 	var mousePositionControl = new ol.control.MousePosition(
 	{	coordinateFormat: ol.coordinate.createStringXY(4),
 		undefinedHTML: ""
