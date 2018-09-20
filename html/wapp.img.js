@@ -72,28 +72,6 @@ wapp.img.prototype.addSource = function(name, dataURL, map)
 	});
 	map.addInteraction(layers.imask);
 	layers.imask.setActive(false);
-	// Mask control tool
-	var mk = new ol.control.Toggle(
-		{	html: "<i class='fa fa-crop'></i>",
-			'className': "ol-mask",
-			toggleFn: function(b)
-			{	if (!self.maskFeature)
-				{	layers.imask.setActive(true);
-					layers.iclick.setActive(false);
-				}
-			}
-		});
-	map.addControl(mk);
-	// New mask added
-	vector.getSource().on('addfeature', function(e)
-	{	if (layers.imask.getActive())
-		{	this.maskFeature = e.feature;
-			layers.imask.setActive(false);
-			map.removeControl(mk);
-			if (!this.lastPoint.img) layers.iclick.setActive(true);
-			this.calc();
-		}
-	}.bind(this));
 
 	// Modification => calc new transform
 	var modify = new ol.interaction.Modify(
