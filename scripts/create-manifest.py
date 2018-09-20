@@ -25,6 +25,12 @@ metadata = map(lambda x: pickle.load(open(x, 'rb')), glob.glob(os.path.join(meta
 
 def formatEvent(ev):
     del ev['worldfile']
+    del ev['kartatid']
+    del ev['mapid']
+    del ev['mapfilename']
+    del ev['base_url']
+    del ev['format']
+    del ev['rawtype']
     return ev
 
 
