@@ -10,19 +10,22 @@ html
 	top:0; bottom:0;
 }
 #map,
-#img
+.left-box
 {	position:fixed;
 	width:39.5%;
 	height:100%;
 	top:0; bottom:0;
-	cursor: crosshair;
   overflow: hidden;
 
+}
+
+#map, #img {
+	cursor: crosshair;
 }
 #map
 {	right:0;
 }
-#img
+.left-box
 {	left:21%;
 }
 
@@ -32,7 +35,7 @@ html
 	margin: auto;
 }
 
-.fullpage #img
+.fullpage .left-box
 {	top:auto;
 	width:200px;
 	height:200px;
@@ -41,19 +44,24 @@ html
 	background:#fff;
 	padding:5px;
 }
-.fullpage #img .ol-control
+.fullpage .left-box .ol-control
 {	display: none;
 }
-.fullpage #img .ol-fullpage
+.fullpage .left-box .ol-fullpage
 {	display: block;
 }
-.fullpage #img .ol-viewport
+.fullpage .left-box .ol-viewport
 {	border-radius:0 10px 0 0;
 }
 
 .fullpage #map
 {	left:20%;
 	width:80%;
+}
+
+#instructions {
+  padding: 10px;
+  width: 36%;
 }
 
 .ol-mask,

@@ -222,6 +222,8 @@ wapp.setEvents =  function(key) {
 
 wapp.clearAll = function (){
   if (wapp.current){
+    $("#instructions").show()
+    $("#img").hide()
     $("#submit-info").prop('disabled', true)
     $("#name").html("")
     $("#club").html("")
@@ -433,13 +435,17 @@ wapp.setImageMap = function()
 /** Load a new file
 */
 wapp.load = function (name, dataURL)
-{	$(".dialog").addClass("hidden");
+{
+  $("#img").show()
+  $("#instructions").hide()
+  $(".dialog").addClass("hidden");
 	this.current = new wapp.img(name, dataURL, this.mapimg, this.map);
 	$("#loading").removeClass("hidden");
 	$("#loading img").attr('src', dataURL);
 	// console.log(dataURL)
 	wapp.current.sourceLayer.image.getSource().once ("change", function()
 	{	$("#loading").addClass("hidden");
+    wapp.mapimg.updateSize()
 	});
 };
 
