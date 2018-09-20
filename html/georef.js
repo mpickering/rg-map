@@ -207,7 +207,7 @@ wapp.setEvents =  function(key) {
         $("#event-list").html("")
     		$.each( data, function( key, val ) {
 					console.log(key, val)
-        	items.push( "<div class='raised-box search-item' id='" + key + "'>" + val.name + "</div>" );
+        	items.push( "<button class='raised-box search-item' id='" + key + "'>" + val.name + "</button>" );
           	});
 
             $( "<div/>", {

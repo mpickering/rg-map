@@ -43,14 +43,18 @@
   <div id="info" class="hidden">
   </div>
   <div id="select">
-    <div id="info">
-      <div class="infoline">Name: <span id="name"> </span></div>
-      <div class="infoline">Club: <span id="club"> </span></div>
-    </div>
-      <button id="submit-info" disabled>Submit Georeferencing</button>
-      <button id="clear">Clear</button>
-    <h2>Select map</h2>
+    <dl class="dl-horizontal clearfix">
+        <dt>Name</dt>
+        <dd><span id="name"></span></dd>
+        <dt>Club</dt>
+        <dd><span id="club"></span></dd>
+    </dl>
+    <button class="button" id="submit-info" disabled>Submit Georeferencing</button>
+    <button class="button" id="clear">Clear</button>
+    <div id="search-box">
+      <label for="event-search">Select map</label>
     <input type="text" id="event-search" placeholder="Name/club/YY/MM/DD"/>
+    </div>
     <div id="event-list">
     </div>
   </div>

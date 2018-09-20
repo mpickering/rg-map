@@ -1,6 +1,10 @@
 html
 {	font-family: "Trebuchet MS",Helvetica,sans-serif;
 }
+body
+{
+margin: 0px;
+}
 #select
 {	position:fixed;
 	width:20%;
@@ -8,6 +12,7 @@ html
   border-width: 0px 1px 0 0px;
   border-style: solid;
 	top:0; bottom:0;
+  padding: 5px;
 }
 #map,
 .left-box
@@ -138,7 +143,6 @@ html
 	text-decoration:none;
 	cursor:pointer;
 	display:inline-block;
-	box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
 }
 
 h1
@@ -169,13 +173,76 @@ h1
 }
 
 .search-item
-{ display: block;
-  height: 35px;
+{ display: inline-block;
+  padding: 5px;
+  width:100%;
+  text-align: left;
 }
 
 .raised-box {
-    padding: 10px 0 0px 10px;
-    border: 1px solid #77aaff;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
+    padding: 5px 5px 5px 5px;
+    border: 1px solid #000000;
+    margin-bottom:2px;
 }
 
+
+.dl-horizontal {
+      font-size: 0;
+}
+
+      dt, dd {
+        margin: 4px 0;
+        font-size: 12px;
+        vertical-align: top;
+      }
+
+      dt {
+        width: 30px;
+        padding-right: 10px;
+        /* background-color: aquamarine; */
+      }
+
+      dd {
+        font-size: 12px;
+        font-weight: 300;
+        text-align: left;
+        padding-left: 4px;
+        width: 80%;
+        display: inline-block;
+        /* background-color: tomato; */
+      }
+
+
+      .value-lg {
+        font-size: 24px;
+      }
+
+.button {
+    background-color: #FFFFFF; /* Green */
+    border: none;
+    padding: 15px 15px;
+    margin-top: 2px;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: 1px solid #000000;
+  }
+
+
+#search-box {
+  font-size: 12px;
+  padding: 10px 0px;
+  border-top: 1px;
+  width: 100%;
+  display: table;
+}
+
+#event-search {
+  width: 95%;
+  display: table-cell;
+}
+
+#search-box label {
+  display: table-cell;
+}
