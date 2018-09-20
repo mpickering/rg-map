@@ -49,13 +49,13 @@ margin: 0px;
 	background:#fff;
 	padding:5px;
 }
-.fullpage .left-box .ol-control
+.fullpage #img .ol-control
 {	display: none;
 }
-.fullpage .left-box .ol-fullpage
+.fullpage #img .ol-fullpage
 {	display: block;
 }
-.fullpage .left-box .ol-viewport
+.fullpage #img .ol-viewport
 {	border-radius:0 10px 0 0;
 }
 
@@ -100,7 +100,7 @@ margin: 0px;
 }
 
 .fullpage .ol-fullpage
-{	position:fixed;
+{
 	z-index:10;
 }
 
