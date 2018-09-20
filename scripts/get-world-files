@@ -1,0 +1,9 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p google-cloud-sdk
+
+if [[ $# -eq 0 ]] ; then
+    echo 'Must pass output directory'
+    exit 1
+fi
+
+gsutil -m rsync -r gs://rg-maps-final-world-files $1
