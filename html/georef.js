@@ -206,7 +206,6 @@ wapp.setEvents =  function(key) {
         var items = []
         $("#event-list").html("")
     		$.each( data, function( key, val ) {
-					console.log(key, val)
         	items.push( "<button class='raised-box search-item' id='" + key + "'>" + val.name + "</button>" );
           	});
 
@@ -313,8 +312,6 @@ wapp.setMap = function()
   this.map.addControl(geocoder);
 
   geocoder.on('addresschosen', function(evt) {
-    console.log(evt)
-    console.log(evt.coordinate)
     if (evt.bbox){
       map.getView().fit(evt.bbox, { duration: 500 });
     } else {
