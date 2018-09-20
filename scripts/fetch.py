@@ -26,7 +26,8 @@ try:
 except IndexError:
     world_file_path = None
 
-event = pickle.load(open(metadata_path, 'rb'))
+with open(metadata_path, 'rb') as md_f:
+    event = pickle.load(md_f)
 
 
 # World file is always in projection EPSG:4326
@@ -50,7 +51,8 @@ def write_proj(filename, proj):
 
     elif proj == "4326":
         s = 'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'
-    open(os.path.join(output_dir, filename), "w").write(s)
+    with open(os.path.join(output_dir, filename), "w") as f:
+        f.write(s)
 
 
 
@@ -83,5 +85,6 @@ else:
     file_name = file_hash + '.pickle'
     out_filename = os.path.join(output_dir, file_name)
     event['hash'] = file_hash
-    pickle.dump(event, open(out_filename, 'wb'))
+    with open(out_filename, 'wb') as f:
+        pickle.dump(event, f)
 
