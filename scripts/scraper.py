@@ -59,7 +59,7 @@ display = Display(visible=0, size=(800, 600))
 display.start()
 
 
-for base_url in [urls[0]]:
+for base_url in urls:
     driver = webdriver.Firefox()
     eprint ("Processing {}".format(base_url))
     driver.get(base_url + "rg2/")
