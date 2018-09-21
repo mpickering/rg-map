@@ -71,7 +71,7 @@ deployScripts = proc dir -> do
 
 getWorldFiles :: SimpleFlow (Content Dir) (Content Dir)
 getWorldFiles = proc script_dir -> do
-  step All <<< nixScript [relfile|get-world-files|] [] (\_ -> [outParam]) -< (script_dir, ())
+  step All <<< impureNixScript [relfile|get-world-files|] [] (\_ -> [outParam]) -< (script_dir, ())
 
 groupKeysPure :: (Content File, M.Map String (Content File)) -> (Content File, Maybe (Content File))
 groupKeysPure (c, map) =
