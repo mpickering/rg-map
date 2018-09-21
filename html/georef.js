@@ -283,7 +283,6 @@ wapp.setMap = function()
           source: new ol.source.XYZ({
             url: '//storage.googleapis.com/rg-maps/{z}/{x}/{-y}.png'
           }),
-					baseLayer: true,
           opacity: 0.5,
 					visible: true
 				}),
