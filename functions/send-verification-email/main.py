@@ -54,8 +54,7 @@ def send_verification_email(data, context):
     print('Updated: {}'.format(data['updated']))
 
 
-    map = staticmap.StaticMap(3000, 4000, zoom=13
-                             , url_template="https://storage.googleapis.com/gb-tiles/gb-tiles/{z}/{x}/{y}.png")
+    map = staticmap.StaticMap(3000, 4000, url_template="http://b.tile.opentopomap.org/{z}/{x}/{y}.png")
 
     with open("/tmp/map.jgw") as f:
         content = f.readlines()
@@ -83,7 +82,9 @@ def send_verification_email(data, context):
     gi = staticmap.Geoimage(p.bounds, test_image)
     map.add_image(gi)
 
-    image = map.render()
+
+    # Only 1-14 available rn
+    image = map.render(zoom=14)
     image.save("/tmp/image.png")
     bucket = storage_client.get_bucket("verif-images")
     blob = bucket.blob(h + ".png")
