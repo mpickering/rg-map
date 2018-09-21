@@ -153,7 +153,7 @@ georefFlow = proc (script_dir, meta_dir, maps) -> do
   toMerge <- splitDir -< merge_dir
   vrt_dir <- step All <<< mergeRasters -< (script_dir, toMerge)
   merged_vrts <- splitDir -< vrt_dir
-  tiles <- mergeDirs' <<< mapA (step All) <<< mapA makeTiles -< [(script_dir, vrt) | vrt <- merged_vrts]
+  tiles <- mergeDirs' <<< mapA (step All) <<< mapSeqA makeTiles -< [(script_dir, vrt) | vrt <- merged_vrts]
 
   leaflet <- step All <<< makeLeaflet -< ( script_dir, (merge_dir, meta_dir))
 
