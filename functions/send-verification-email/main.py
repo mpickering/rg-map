@@ -54,7 +54,7 @@ def send_verification_email(data, context):
     print('Updated: {}'.format(data['updated']))
 
 
-    map = staticmap.StaticMap(3000, 4000, url_template="http://b.tile.opentopomap.org/{z}/{x}/{y}.png")
+    map = staticmap.StaticMap(1000, 800, url_template="http://b.tile.opentopomap.org/{z}/{x}/{y}.png")
 
     with open("/tmp/map.jgw") as f:
         content = f.readlines()
