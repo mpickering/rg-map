@@ -171,7 +171,7 @@ uploadManifest = impureNixScript [relfile|upload-manifest|] [] (\dir -> [ conten
 
 createManifest = nixScript [relfile|create-manifest.py|] [] (\dir -> [ outParam, contentParam dir ])
 
-uploadSite = nixScript [relfile|upload-site|] [] (\dir -> [ contentParam dir ])
+uploadSite = nixScript [relfile|upload-maps|] [] (\dir -> [ contentParam dir ])
 
 uploadGeoreferencer = nixScript [relfile|upload-georeferencer|] [] (\dir -> [ contentParam dir ])
 
