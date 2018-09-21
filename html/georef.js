@@ -242,7 +242,7 @@ wapp.clearAll = function (){
 
 wapp.loadEvent = function(ev){
   wapp.clearAll()
-  wapp.load(ev.mapfilename, ev.map_url)
+  wapp.load("map", ev.map_url)
   $("#name").html(ev.name)
   $("#club").html(ev.club)
   wapp.current.event = ev
