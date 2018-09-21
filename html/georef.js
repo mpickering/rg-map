@@ -256,7 +256,7 @@ wapp.setMap = function()
 	var layers =
 	[
   new ol.layer.Group(
-		{	name:"baseLayer",
+		{	name:"Base Layers",
 			layers: [
 				// OSM
 				new ol.layer.Tile(
