@@ -18,7 +18,12 @@ do
 done
 for file in "$1/*.jpg"
 do
-  echo This message goes to stderr >&2
+  [ -e $file  ] || continue
+  # Defensive in case the file is labelled a jpg but is actually a gif
+  mogrify -format jpg $file -path $2
+done
+for file in "$1/*.jpg"
+do
   [ -e $file  ] || continue
   cp $file $2
 done
