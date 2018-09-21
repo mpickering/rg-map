@@ -123,7 +123,17 @@ mainFlow = proc () -> do
 
   deployScripts -< script_dir
 
+  georefSite <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|html/|]), Nothing)
+
+  uploadSite -< (script_dir, res)
+
+  uploadGeoreferencer -< (script_dir, georefSite)
+
   returnA -< res
+
+
+
+
 
 {-
 Plan
@@ -173,6 +183,12 @@ makeLeaflet = nixScript [relfile|create-leaflet.py|] [[relfile|leaflet.nix|]] (\
 uploadManifest = impureNixScript [relfile|upload-manifest|] [] (\dir -> [ contentParam dir ])
 
 createManifest = nixScript [relfile|create-manifest.py|] [] (\dir -> [ outParam, contentParam dir ])
+
+uploadSite = nixScript [relfile|upload-site|] [] (\dir -> [ contentParam dir ])
+
+uploadGeoreferencer = nixScript [relfile|upload-georeferencer|] [] (\dir -> [ contentParam dir ])
+
+---
 
 nixScript = nixScriptX False NoOutputCapture
 
