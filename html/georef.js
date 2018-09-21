@@ -202,7 +202,10 @@ wapp.setEvents =  function(key) {
         if (key) {
           data = wapp.events.filter(ev => filterEvent(key, ev))
         } else { data = wapp.events }
-        data = data.slice(0,10)
+
+        data = data.sort(function(){
+                          return 0.5 - Math.random()
+                        }).slice(0,10)
         var items = []
         $("#event-num").html("Remaining Events: " + wapp.events.length.toString())
         $("#event-list").html("")
