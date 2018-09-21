@@ -278,7 +278,7 @@ wapp.setMap = function()
 				new ol.layer.Tile(
 				{	name: "RG-maps",
           source: new ol.source.XYZ({
-            url: '//storage.googleapis.com/rg-maps/{z}/{x}/{y}.png'
+            url: '//storage.googleapis.com/rg-maps/{z}/{x}/{-y}.png'
           }),
 					baseLayer: true,
           opacity: 0.5,
