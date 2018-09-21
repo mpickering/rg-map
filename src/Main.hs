@@ -6,7 +6,7 @@
 module Main where
 
 import Control.Arrow
-import Control.Exception (Exception (..))
+import Control.Exception (Exception (..), SomeException)
 import Control.Funflow
 import Control.Funflow.ContentStore (Content (..), contentItem, itemPath, (^</>))
 import qualified Control.Funflow.ContentStore as CS
@@ -15,6 +15,7 @@ import Control.Funflow.External
 import Path
 import Path.IO
 import Control.Funflow.ContentHashable
+import Control.Funflow.External.Coordinator.SQLite
 import Control.Arrow.Free
 
 import System.Posix.Files
@@ -23,11 +24,23 @@ import Data.Foldable
 import Data.Default
 import qualified Data.Map as M
 
+storeDir :: Path Rel Dir
+storeDir = [reldir|store|]
+
+dbDir :: Path Rel Dir
+dbDir = [reldir|coord|]
+
+runSQLiteFlow :: Path Abs Dir -> SimpleFlow a b -> a -> IO (Either SomeException b)
+runSQLiteFlow wd flow' input =
+  CS.withStore (wd </> storeDir) $ \store ->
+    runSimpleFlow SQLite (wd </> dbDir) store flow' input
+
 main :: IO ()
 main = do
     cwd <- getCurrentDir
-    r <- withSimpleLocalRunner (cwd </> [reldir|funflow-example/store|]) $ \run ->
-      run (mainFlow >>> storePath) ()
+    r <- runSQLiteFlow (cwd </> [reldir|funflow-example/|])
+          (mainFlow >>> storePath)
+          ()
     case r of
       Left err ->
         putStrLn $ "FAILED: " ++ displayException err
