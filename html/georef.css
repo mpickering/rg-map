@@ -13,6 +13,7 @@ margin: 0px;
   border-style: solid;
 	top:0; bottom:0;
   padding: 5px;
+  overflow: scroll
 }
 #map,
 .left-box
@@ -67,6 +68,7 @@ margin: 0px;
 #instructions {
   padding: 10px;
   width: 36%;
+  overflow: scroll;
 }
 
 .ol-mask,
@@ -245,4 +247,10 @@ h1
 
 #search-box label {
   display: table-cell;
+}
+
+#footer {
+  font-size: 12px;
+  margin: 5px;
+  width: 100%;
 }

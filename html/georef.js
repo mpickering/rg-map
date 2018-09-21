@@ -204,6 +204,7 @@ wapp.setEvents =  function(key) {
         } else { data = wapp.events }
         data = data.slice(0,10)
         var items = []
+        $("#event-num").html("Remaining Events: " + wapp.events.length.toString())
         $("#event-list").html("")
     		$.each( data, function( key, val ) {
         	items.push( "<button class='raised-box search-item' id='" + key + "'>" + val.name + "</button>" );
