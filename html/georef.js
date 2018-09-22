@@ -174,7 +174,10 @@ wapp.distProj = function(dist, c) {
 })();
 
 filterEvent = function (key, ev){
-   return (((ev.name).search(key)  != -1) || ((ev.club).search(key) != -1) || ((ev.date).search(key)) != -1)
+   var key = key.toLowerCase()
+   return (((ev.name.toLowerCase()).search(key)  != -1)
+              || ((ev.club.toLowerCase()).search(key) != -1)
+              || ((ev.date.toLowerCase()).search(key)) != -1)
 }
 
 $(document).ready(function(){ wapp.initialize(); });
