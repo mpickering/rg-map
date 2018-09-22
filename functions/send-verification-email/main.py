@@ -84,7 +84,7 @@ def send_verification_email(data, context):
 
 
     # Only 1-14 available rn
-    image = map.render(zoom=14)
+    image = map.render()
     image.save("/tmp/image.png")
     bucket = storage_client.get_bucket("verif-images")
     blob = bucket.blob(h + ".png")
