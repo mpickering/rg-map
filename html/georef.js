@@ -266,7 +266,7 @@ wapp.setMap = function()
 				{	name: "OSM",
 					source: new ol.source.OSM(),
 					baseLayer: true,
-					visible: false
+					visible: true
 				}),
 				new ol.layer.Tile(
 				{	name: "OSM-TOPO",
@@ -274,7 +274,7 @@ wapp.setMap = function()
             url: '//{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
           }),
 					baseLayer: true,
-					visible: true
+					visible: false
 				}),
 
 			],
