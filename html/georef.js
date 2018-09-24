@@ -60,6 +60,7 @@ var wapp =
 	*/
 	initialize: function()
 	{	// Initialize loader
+
 		$("#loader input[type=file]").loadDataURL( wapp.load, wapp );
 		$("#loader button").click( function()
 			{	var f = $("#loader input[type=text]").val();
@@ -90,12 +91,17 @@ var wapp =
       wapp.setEvents(val)
     });
 
+
 		// Set the maps
 		this.setMap();
 		this.setImageMap();
     this.populateEvents();
 
-		// Decode source
+    var urlParams = new URLSearchParams(window.location.search);
+		if (urlParams.has('search')){
+			$("#event-search").val(urlParams.get('search'))
+		}
+
 		var p={}, hash = document.location.search;
 		if (hash)
 		{	hash = hash.replace(/(^#|^\?)/,"").split("&");
@@ -196,7 +202,9 @@ wapp.populateEvents = function(){
                   done_events = (de_data['items'].concat(we_data['items'])).map(e => e['name'].slice(0, -4))
                   wapp.events = data.filter(function(item){
                   return done_events.indexOf(item['hash']) === -1 })
-              wapp.setEvents() })}) })
+              val = $("#event-search").val()
+              wapp.setEvents(val)
+              })}) })
         }})}
 
 
