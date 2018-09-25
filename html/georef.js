@@ -219,6 +219,21 @@ wapp.setEvents =  function(key) {
                         }).slice(0,10)
         var items = []
         $("#event-num").html("Remaining Events: " + wapp.events.length.toString())
+        bucket = wapp.bucketEvents()
+        var sortable = [];
+        for (var k in bucket) {
+          sortable.push([k, bucket[k]]);
+        }
+
+        sortable.sort(function(a, b) {
+          return a[1] - b[1];
+        }).reverse();
+        for (var key in sortable){
+          $("#club-events").append('<li><a href="http://mpickering.github.io/georeferencer.html?search='
+                + encodeURI(sortable[key][0])
+                + '">' + sortable[key][0] + '</a> - ' + sortable[key][1] + '</li>')
+        }
+        $("#club-events").html()
         $("#event-list").html("")
     		$.each( data, function( key, val ) {
         	items.push( "<button class='raised-box search-item' id='" + key + "'>" + val.name + "</button>" );
@@ -233,6 +248,20 @@ wapp.setEvents =  function(key) {
         })
 
   }
+
+wapp.bucketEvents = function (){
+  var data = wapp.events
+  bucket = {}
+  for (var i = 0; i < data.length; i++) {
+    var ev = data[i]
+    if ( ev.club in bucket )
+     { bucket[ev.club] += 1 }
+    else {
+      bucket[ev.club] = 1
+    }
+  }
+  return bucket;
+}
 
 wapp.clearAll = function (){
   if (wapp.current){
