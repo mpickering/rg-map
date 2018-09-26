@@ -270,6 +270,7 @@ wapp.clearAll = function (){
     $("#submit-info").prop('disabled', true)
     $("#name").html("")
     $("#club").html("")
+    $("#club-events").html("")
     this.mapimg.removeLayer(wapp.current.sourceLayer.image)
     this.mapimg.removeLayer(wapp.current.sourceLayer.vector)
     this.mapimg.removeInteraction(wapp.current.sourceLayer.iclick)
