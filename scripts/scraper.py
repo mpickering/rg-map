@@ -47,7 +47,7 @@ def make_hash(o):
 # Other instances of routegadgets
 # Turned off for now due to https problem
 #inj_urls = ["https://routegadget.fvo.org.uk/"]
-inj_urls = []
+inj_urls = ["http://www.sboc.routegadget.co.uk/"]
 
 # Get the list of available routegadgets from the main page
 page = urlopen("http://www.routegadget.co.uk/")
