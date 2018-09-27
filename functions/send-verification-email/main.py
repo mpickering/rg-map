@@ -30,8 +30,9 @@ def send_verification_email(data, context):
     h, _ = os.path.splitext(data['name'])
 
 
-
-    event = manifest[h]
+    if h in manifest:
+      event = manifest[h]
+    else: return ""
 
 
     # Write map and world file to /tmp
