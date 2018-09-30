@@ -29,8 +29,8 @@ icon_map = dict ([ ("I", "darkred"),
       ("T", "gray") ])
 
 
-def make_icon(event):
-    return folium.map.Icon(color=icon_map[event['rawtype']])
+def make_colour(event):
+    return icon_map[event['rawtype']]
 
 def GetCenter(gt,cols,rows):
     ''' Return list of corner coordinates from a geotransform
@@ -101,7 +101,11 @@ for image_vrt in images:
 
     center = GetCenterImage(image_vrt)
     popup = folium.map.Popup(html=make_event_link(event))
-    folium.Marker(center, popup=popup, icon=make_icon(event)).add_to(m)
+    folium.CircleMarker( center, radius=10
+                       , popup=popup
+                       , fill_colour=make_colour(event)
+                       , line_colour=make_colour(event)
+                       , fill=True).add_to(m)
 
 tiles_loc = "https://s3-eu-west-1.amazonaws.com/rg-maps/{z}/{x}/{y}.png"
 tiles_loc_dev = "{z}/{x}/{y}.png"
