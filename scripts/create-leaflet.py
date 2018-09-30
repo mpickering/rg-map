@@ -91,7 +91,8 @@ images = glob.glob(os.path.join(vrt_dir,'*.jpg.vrt'))
 print(len(images))
 
 
-m = folium.Map([54.3781, -3.4360], zoom_start=6, tiles='OpenStreetMap')
+m = folium.Map([54.3781, -3.4360], zoom_start=6, tiles='OpenStreetMap'
+              , prefer_canvas=True)
 
 for image_vrt in images:
     print(image_vrt)
