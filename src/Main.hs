@@ -22,6 +22,7 @@ import Control.Monad
 import Data.Foldable
 import Data.Default
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 main :: IO ()
 main = do
@@ -61,30 +62,42 @@ deployScripts = proc dir -> do
   function_dir_upload <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/upload-world-file|]), Nothing)
   function_dir_verif <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/send-verification-email|]), Nothing)
   function_dir_final <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/do-verification|]), Nothing)
+  function_dir_flag <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|functions/flag-map|]), Nothing)
   nixScript [relfile|deploy-function|] [] (\fndir -> [contentParam fndir])
     -< (dir, function_dir_upload)
   nixScript [relfile|deploy-verif-function|] [] (\fndir -> [contentParam fndir])
     -< (dir, function_dir_verif)
   nixScript [relfile|deploy-final-function|] [] (\fndir -> [contentParam fndir])
     -< (dir, function_dir_final)
+  nixScript [relfile|deploy-flag-function|] [] (\fndir -> [contentParam fndir])
+    -< (dir, function_dir_flag)
   returnA -< ()
 
 getWorldFiles :: SimpleFlow (Content Dir) (Content Dir)
 getWorldFiles = proc script_dir -> do
   step All <<< impureNixScript [relfile|get-world-files|] [] (\_ -> [outParam]) -< (script_dir, ())
 
-groupKeysPure :: (Content File, M.Map String (Content File)) -> (Content File, Maybe (Content File))
-groupKeysPure (c, map) =
+getFlaggedMaps :: SimpleFlow (Content Dir) (Content Dir)
+getFlaggedMaps = proc script_dir -> do
+  step All <<< impureNixScript [relfile|get-flagged-maps|] [] (\_ -> [outParam]) -< (script_dir, ())
+
+groupKeysPure :: (Content File, M.Map String (Content File), S.Set String)
+                    -> (Content File, Maybe (Content File), Bool)
+groupKeysPure (c, map, flagged) =
   let getHash = reverse . drop 7 . reverse
-  in (c, M.lookup (getHash (toFilePath (CS.contentFilename c))) map)
+      h = getHash (toFilePath (CS.contentFilename c))
+  in (c, M.lookup h map, S.member h flagged )
 
 
-groupKeys :: SimpleFlow ([Content File], Content Dir) ([(Content File, Maybe (Content File))])
-groupKeys = proc (cs, d) -> do
+groupKeys :: SimpleFlow ([Content File], Content Dir, Content Dir)
+                        ([(Content File, Maybe (Content File), Bool)])
+groupKeys = proc (cs, d, fs) -> do
   d' <- splitDir -< d
+  fs' <- splitDir -< fs
   let getHash = reverse . drop 4 . reverse
   let world_file_map = M.fromList [ (getHash (toFilePath (CS.contentFilename c)), c) | c <- d' ]
-  mapA (step groupKeysPure) -< map (, world_file_map) cs
+      flagged = S.fromList [ (toFilePath (CS.contentFilename c)) | c <- fs']
+  mapA (step groupKeysPure) -< map (, world_file_map, flagged) cs
 
 
 mainFlow :: SimpleFlow () (Content Dir)
@@ -94,11 +107,12 @@ mainFlow = proc () -> do
   script_dir <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|scripts/|]), Nothing)
 
   worldFiles <- getWorldFiles  -< script_dir
+  flaggedMaps <- getFlaggedMaps -< script_dir
   stepIO print -< worldFiles
 
   meta_dir <- step All <<< scrape -< (script_dir, ())
   meta_keys <- splitDir -< meta_dir
-  keys <- groupKeys -< (meta_keys, worldFiles)
+  keys <- groupKeys -< (meta_keys, worldFiles, flaggedMaps)
   (maps, raw_maps) <- partitionA boolChoice <<< mapA (fetch) -< [( script_dir, event) | event <- keys]
   raw_map_dir <- mergeDirs <<< mapA rmOut -< raw_maps
   manifest_dir <- createManifest -< (script_dir, raw_map_dir)
@@ -154,7 +168,7 @@ scrape = nixScript [relfile|scraper.py|] [[relfile|shell.nix|]]
           (\() -> [ outParam ])
 
 fetch = nixScriptWithOutput [relfile|fetch.py|] [[relfile|shell.nix|]]
-          (\(metadata, mwf)-> [ outParam, contentParam metadata ] ++ (maybe [] (singleton . contentParam) mwf))
+          (\(metadata, mwf, flag)-> [ outParam, contentParam metadata, if flag then "1" else "0" ] ++ (maybe [] (singleton . contentParam) mwf) )
 
 convertToGif = nixScript [relfile|convert_gif|] [] (\dir -> [ pathParam (IPItem dir), outParam ])
 

@@ -21,8 +21,9 @@ def eprint(*args, **kwargs):
 
 output_dir = os.path.join(sys.argv[1])
 metadata_path=sys.argv[2]
+flag_raw=sys.argv[3]
 try:
-    world_file_path = sys.argv[3]
+    world_file_path = sys.argv[4]
 except IndexError:
     world_file_path = None
 
@@ -38,6 +39,13 @@ def write_world_file(world_filename, world_dict):
     for index in ['A', 'D', 'B', 'E', 'C', 'F']:
         write_line(index)
     f.close()
+
+if flag_raw == "1":
+  flagged = True
+elif flag_raw == "0":
+  flagged = False
+else:
+  raise Exception("Unexpected flag value: {}".format(flag_raw))
 
 mfn = event['mapfilename']
 club = event['club']
@@ -61,7 +69,7 @@ def write_proj(filename, proj):
 # Mark whether we are writing a world file as the computation
 # will branch on the next step. Ultimately, we will try to fetch the world
 # file from another bucket if it's not included but not yet..
-if event['worldfile']['valid'] or world_file_path :
+if (event['worldfile']['valid'] or world_file_path) and not flagged :
     print(0)
     _, file_ext = os.path.splitext(mfn)
 
@@ -85,6 +93,7 @@ else:
     file_name = file_hash + '.pickle'
     out_filename = os.path.join(output_dir, file_name)
     event['hash'] = file_hash
+    event['flagged'] = flagged
     with open(out_filename, 'wb') as f:
         pickle.dump(event, f)
 
