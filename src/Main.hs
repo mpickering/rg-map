@@ -201,7 +201,7 @@ nixScriptX impure std script scripts params = proc (scriptDir, a) -> do
         , _etWriteToStdOut = std
         , _etEnv = [("NIX_PATH", envParam "NIX_PATH")] }) -< (env, a)
   where
-    props = def { ep_impure = impure }
+    props = def { ep_impure = if impure then alwaysRecompile else EpPure }
     absScripts sd = map (sd ^</>) (script : scripts)
 
 
