@@ -102,11 +102,11 @@ for image_vrt in images:
 
     center = GetCenterImage(image_vrt)
     popup = folium.map.Popup(html=make_event_link(event))
-    folium.CircleMarker( center, radius=10
-                       , popup=popup
-                       , fill_colour=make_colour(event)
-                       , line_colour=make_colour(event)
-                       , fill=True).add_to(m)
+    folium.Circle( center, radius=100
+                 , popup=popup
+                 , color=make_colour(event)
+                 , fill_color=make_colour(event)
+                 , fill=True).add_to(m)
 
 tiles_loc = "https://s3-eu-west-1.amazonaws.com/rg-maps/{z}/{x}/{y}.png"
 tiles_loc_dev = "{z}/{x}/{y}.png"
