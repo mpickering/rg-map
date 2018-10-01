@@ -120,17 +120,18 @@ mainFlow = proc () -> do
 
   stepIO print <<< storePath -< All manifest_dir
 
-  res <- georefFlow -< (script_dir, meta_dir, maps)
+  (s, ms) <- georefFlow -< (script_dir, meta_dir, maps)
 
   deployScripts -< script_dir
 
   georefSite <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|html/|]), Nothing)
 
-  uploadSite -< (script_dir, res)
+  uploadSite -< (script_dir, ms)
+  uploadSite -< (script_dir, s)
 
   uploadGeoreferencer -< (script_dir, georefSite)
 
-  returnA -< res
+  returnA -< ms
 
 
 
@@ -147,7 +148,7 @@ Plan
 -}
 
 
-georefFlow :: SimpleFlow (Content Dir, Content Dir, [CS.Item]) (Content Dir)
+georefFlow :: SimpleFlow (Content Dir, Content Dir, [CS.Item]) (Content Dir, Content Dir)
 georefFlow = proc (script_dir, meta_dir, maps) -> do
   mapJpgs <- mapA convertToGif -< [(script_dir, m) | m <- maps]
   merge_dir <- mergeDirs' <<< mapA (step All) <<< mapA warp -< [(script_dir, jpg) | jpg <- mapJpgs ]
@@ -158,7 +159,7 @@ georefFlow = proc (script_dir, meta_dir, maps) -> do
 
   leaflet <- step All <<< makeLeaflet -< ( script_dir, (merge_dir, meta_dir))
 
-  mergeDirs -< [leaflet, tiles]
+  returnA -< (leaflet, tiles)
 
 singleton x = [x]
 
