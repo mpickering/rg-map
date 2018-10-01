@@ -64,13 +64,7 @@ def write_proj(filename, proj):
 
 
 
-
-
-# Mark whether we are writing a world file as the computation
-# will branch on the next step. Ultimately, we will try to fetch the world
-# file from another bucket if it's not included but not yet..
-if (event['worldfile']['valid'] or world_file_path) and not flagged :
-    print(0)
+def download_map():
     _, file_ext = os.path.splitext(mfn)
 
     file_name = file_hash + file_ext
@@ -88,12 +82,29 @@ if (event['worldfile']['valid'] or world_file_path) and not flagged :
         write_world_file(world_filename, event['worldfile'])
         write_proj(proj_filename, "4326")
     eprint(club, name, mfn, out_filename)
-else:
-    print(1)
+
+def download_meta():
     file_name = file_hash + '.pickle'
     out_filename = os.path.join(output_dir, file_name)
     event['hash'] = file_hash
     event['flagged'] = flagged
     with open(out_filename, 'wb') as f:
         pickle.dump(event, f)
+
+
+# Mark whether we are writing a world file as the computation
+# will branch on the next step. Ultimately, we will try to fetch the world
+# file from another bucket if it's not included but not yet..
+if not flagged:
+    if (event['worldfile']['valid'] or world_file_path):
+        print(0)
+        download_map()
+
+    else:
+        print(1)
+        download_meta()
+else:
+    print(2)
+    download_map()
+    download_meta()
 

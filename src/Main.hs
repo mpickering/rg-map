@@ -36,23 +36,27 @@ main = do
         putStrLn $ "SUCCESS"
         putStrLn $ toFilePath out
 
+data These a b = This a | That b | These a b
+
 -- | Filter a list given an arrow filter
-partitionA :: ArrowChoice a => a b (Either c d) -> a [b] ([c], [d])
+partitionA :: ArrowChoice a => a b (These c d) -> a [b] ([c], [d])
 partitionA f = proc xs ->
   case xs of
     [] -> returnA -< ([], [])
     (y:ys) -> do
       b <- f -< y
       case b of
-        Left c -> ((second (partitionA f)) >>> arr (\(c, (cs, ds)) -> (c:cs, ds))) -< (c,ys)
-        Right d -> ((second (partitionA f)) >>> arr (\(d, (cs, ds)) -> (cs, d:ds))) -< (d, ys)
+        This c -> ((second (partitionA f)) >>> arr (\(c, (cs, ds)) -> (c:cs, ds))) -< (c,ys)
+        That d -> ((second (partitionA f)) >>> arr (\(d, (cs, ds)) -> (cs, d:ds))) -< (d, ys)
+        These c d -> (second (partitionA f)) >>> arr (\((c, d), (cs, ds)) -> (c:cs, d:ds)) -< ((c, d), ys)
 
-boolChoice :: ArrowFlow eff ex a => a CS.Item (Either CS.Item (Content Dir))
+boolChoice :: ArrowFlow eff ex a => a CS.Item (These CS.Item (Content Dir))
 boolChoice = proc dir -> do
   str <- readString_ -< dir
   case str of
-    '0':_ -> returnA -< (Left dir)
-    '1':_ -> returnA -< (Right (All dir))
+    '0':_ -> returnA -< (This dir)
+    '1':_ -> returnA -< (That (All dir))
+    '2':_ -> returnA -< (These dir (All dir))
     _ -> returnA -< error str
 
 
