@@ -6,4 +6,4 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-gdal2tiles.py -v -e -z 1-$3 -w none "$1" "$2"
+gdal2tiles.py -v -e -z 1-$3 --processes=4 -w none "$1" "$2"
