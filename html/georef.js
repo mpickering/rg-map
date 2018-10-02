@@ -87,8 +87,11 @@ var wapp =
     $("#clear").click(function(){ wapp.clearAll()});
 
     $('#event-search').on('input', function(ev) {
-      val = $("#event-search").val()
-      wapp.setEvents(val)
+      wapp.setEvents()
+    });
+
+    $('#event-flagged').on('input', function(ev) {
+      wapp.setEvents()
     });
 
 
@@ -179,11 +182,13 @@ wapp.distProj = function(dist, c) {
 }
 })();
 
-filterEvent = function (key, ev){
+filterEvent = function (key, checked, ev){
    var key = key.toLowerCase()
-   return (((ev.name.toLowerCase()).search(key)  != -1)
+   return ((((ev.name.toLowerCase()).search(key)  != -1)
               || ((ev.club.toLowerCase()).search(key) != -1)
               || ((ev.date.toLowerCase()).search(key)) != -1)
+              && (checked ? ev.flagged : true ))
+
 }
 
 $(document).ready(function(){ wapp.initialize(); });
@@ -210,8 +215,11 @@ wapp.populateEvents = function(){
 
 
 wapp.setEvents =  function(key) {
-        if (key) {
-          data = wapp.events.filter(ev => filterEvent(key, ev))
+
+        key = $("#event-search").val()
+        checked = $("#event-flagged").is(':checked')
+        if (key || checked ) {
+          data = wapp.events.filter(ev => filterEvent(key, checked, ev))
         } else { data = wapp.events }
 
         data = data.sort(function(){
@@ -225,6 +233,7 @@ wapp.setEvents =  function(key) {
           sortable.push([k, bucket[k]]);
         }
 
+        $("#club-events").html("")
         sortable.sort(function(a, b) {
           return a[1] - b[1];
         }).reverse();
@@ -233,7 +242,6 @@ wapp.setEvents =  function(key) {
                 + encodeURI(sortable[key][0])
                 + '">' + sortable[key][0] + '</a> - ' + sortable[key][1] + '</li>')
         }
-        $("#club-events").html()
         $("#event-list").html("")
     		$.each( data, function( key, val ) {
         	items.push( "<button class='raised-box search-item' id='" + key + "'>" + val.name + "</button>" );
