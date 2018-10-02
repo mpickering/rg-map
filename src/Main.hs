@@ -169,7 +169,7 @@ singleton x = [x]
 
 
 -- Need to mark this as impure
-scrape = nixScript [relfile|scraper.py|] [[relfile|shell.nix|]]
+scrape = impureNixScript [relfile|scraper.py|] [[relfile|shell.nix|]]
           (\() -> [ outParam ])
 
 fetch = nixScriptWithOutput [relfile|fetch.py|] [[relfile|shell.nix|]]
