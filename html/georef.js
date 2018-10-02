@@ -204,9 +204,11 @@ wapp.populateEvents = function(){
             function(de_data){
               $.getJSON("https://www.googleapis.com/storage/v1/b/rg-maps-world-files/o",
                 function(we_data){
-                  done_events = (de_data['items'].concat(we_data['items'])).map(e => e['name'].slice(0, -4))
+                  done_events1 = (de_data['items']).map(e => e['name'].slice(0, -4))
+                  done_events2 = (we_data['items']).map(e => e['name'].slice(0, -4))
                   wapp.events = data.filter(function(item){
-                  return (item['flagged'] || done_events.indexOf(item['hash']) === -1) })
+                  return (done_events2.indexOf(item['hash']) === -1 &&
+                          (item['flagged'] || done_events1.indexOf(item['hash']) === -1)) })
               val = $("#event-search").val()
               wapp.setEvents(val)
               })}) })
