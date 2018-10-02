@@ -206,7 +206,7 @@ wapp.populateEvents = function(){
                 function(we_data){
                   done_events = (de_data['items'].concat(we_data['items'])).map(e => e['name'].slice(0, -4))
                   wapp.events = data.filter(function(item){
-                  return done_events.indexOf(item['hash']) === -1 })
+                  return (item['flagged'] || done_events.indexOf(item['hash']) === -1) })
               val = $("#event-search").val()
               wapp.setEvents(val)
               })}) })
