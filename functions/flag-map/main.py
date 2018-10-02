@@ -13,10 +13,9 @@ def flag_map(request):
         r.headers['Access-Control-Max-Age'] = "3600"
         return r
 
-    request_json = request.get_json()
 
     bucket = storage_client.get_bucket("flagged-maps")
-    destination_blob_name = request_json['hash']
+    destination_blob_name = request.args.get('hash')
     blob = bucket.blob(destination_blob_name)
 
     blob.upload_from_string("")
