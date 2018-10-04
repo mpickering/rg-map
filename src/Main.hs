@@ -130,7 +130,7 @@ mainFlow = proc () -> do
 
   georefSite <- copyDirToStore -< (DirectoryContent (cwd </> [reldir|html/|]), Nothing)
 
-  uploadSite -< (script_dir, ms)
+  uploadMaps -< (script_dir, ms)
   uploadSite -< (script_dir, s)
 
   uploadGeoreferencer -< (script_dir, georefSite)
@@ -190,7 +190,8 @@ uploadManifest = impureNixScript [relfile|upload-manifest|] [] (\dir -> [ conten
 
 createManifest = nixScript [relfile|create-manifest.py|] [] (\dir -> [ outParam, contentParam dir ])
 
-uploadSite = nixScript [relfile|upload-maps|] [] (\dir -> [ contentParam dir ])
+uploadMaps = nixScript [relfile|upload-maps|] [] (\dir -> [ contentParam dir ])
+uploadSite = nixScript [relfile|upload-maps-site|] [] (\dir -> [ contentParam dir ])
 
 uploadGeoreferencer = nixScript [relfile|upload-georeferencer|] [] (\dir -> [ contentParam dir ])
 
