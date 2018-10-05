@@ -1,0 +1,4 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p google-cloud-sdk
+
+gsutil ls gs://verif-images | xargs -l basename | cut -f 1 -d '.' | while read spo; do curl "http://europe-west1-rg-maps-216117.cloudfunctions.net/do_verification?decision=accept&hash=$spo"; done
