@@ -264,10 +264,11 @@ wapp.bucketEvents = function (){
   bucket = {}
   for (var i = 0; i < data.length; i++) {
     var ev = data[i]
-    if ( ev.club in bucket )
-     { bucket[ev.club] += 1 }
+    var lclub = ev.club.toLowerCase()
+    if ( lclub in bucket )
+     { bucket[lclub] += 1 }
     else {
-      bucket[ev.club] = 1
+      bucket[lclub] = 1
     }
   }
   return bucket;
