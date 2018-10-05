@@ -24,6 +24,10 @@ import Data.Default
 import qualified Data.Map as M
 import qualified Data.Set as S
 
+import Data.Time.Clock.POSIX
+import Data.Time.Clock
+import Data.Time.Calendar
+
 main :: IO ()
 main = do
     cwd <- getCurrentDir
@@ -197,17 +201,26 @@ uploadGeoreferencer = nixScript [relfile|upload-georeferencer|] [] (\dir -> [ co
 
 ---
 
-nixScript = nixScriptX False NoOutputCapture
+nixScript = nixScriptX EpPure NoOutputCapture
 
-nixScriptWithOutput = nixScriptX False StdOutCapture
+nixScriptWithOutput = nixScriptX EpPure StdOutCapture
 
 impureNixScript :: ArrowFlow eff ex arr => Path Rel File -> [Path Rel File]
                     -> (a -> [Param]) -> arr (Content Dir, a) CS.Item
-impureNixScript = nixScriptX True NoOutputCapture
+impureNixScript = nixScriptX alwaysRecompile NoOutputCapture
+
+dailyNixScript :: ArrowFlow eff ex arr => Path Rel File -> [Path Rel File]
+                    -> (a -> [Param]) -> arr (Content Dir, a) CS.Item
+dailyNixScript = nixScriptX dailyRecompile NoOutputCapture
+  where
+    dailyRecompile = EpImpure $ do
+      d <- getCurrentTime
+      return (fromIntegral (toModifiedJulianDay (utctDay d)))
+
 
 
 --contentParam (
-nixScriptX :: ArrowFlow eff ex arr => Bool
+nixScriptX :: ArrowFlow eff ex arr => EpPurity
                                    -> OutputCapture
                                    -> Path Rel File
                                    -> [Path Rel File]
@@ -221,7 +234,7 @@ nixScriptX impure std script scripts params = proc (scriptDir, a) -> do
         , _etWriteToStdOut = std
         , _etEnv = [("NIX_PATH", envParam "NIX_PATH")] }) -< (env, a)
   where
-    props = def { ep_impure = if impure then alwaysRecompile else EpPure }
+    props = def { ep_impure = impure }
     absScripts sd = map (sd ^</>) (script : scripts)
 
 
