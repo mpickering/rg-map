@@ -120,7 +120,10 @@ class FlagControl(MacroElement):
     },
     title: 'reset flag'
   }]})
+    {{this._parent.get_name()}}.on('keypress', function(e) {
+        if (e.originalEvent.charCode == 102){
             {{this._parent.get_name()}}.addControl({{this.get_name()}});
+        }})
             {{this._parent.get_name()}}.flagControl = {{this.get_name()}};
         {% endmacro %}
         """)  # noqa
