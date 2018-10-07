@@ -167,7 +167,9 @@ georefFlow = proc (script_dir, meta_dir, maps) -> do
 
   leaflet <- step All <<< makeLeaflet -< ( script_dir, (merge_dir, meta_dir))
 
-  returnA -< (leaflet, tiles)
+  leaflet_min <- step All <<< minimise -< (script_dir, leaflet)
+
+  returnA -< (leaflet_min, tiles)
 
 singleton x = [x]
 
@@ -198,6 +200,13 @@ uploadMaps = nixScript [relfile|upload-maps|] [] (\dir -> [ contentParam dir ])
 uploadSite = nixScript [relfile|upload-maps-site|] [] (\dir -> [ contentParam dir ])
 
 uploadGeoreferencer = nixScript [relfile|upload-georeferencer|] [] (\dir -> [ contentParam dir ])
+
+minimise = nixScript [relfile|minimise-site|]
+                     [[relfile|crisper/default.nix|]
+                     ,[relfile|minimise.nix|]
+                     ,[relfile|crisper/node-env.nix|]
+                     ,[relfile|crisper/node-packages.nix|]]
+                     (\dir -> [ contentParam dir, outParam ])
 
 ---
 

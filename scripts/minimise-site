@@ -1,0 +1,13 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash minimise.nix
+
+if [[ $# -eq 0 ]] ; then
+    echo 'Must pass output directory'
+    exit 1
+fi
+
+echo "Starting minimising"
+
+crisper --source $1/maps.html --html $2/maps.html --js $2/maps.js
+closure-compiler --js_output_file=$2/maps-compiled.js $2/maps.js
+mv $2/maps-compiled.js $2/maps.js

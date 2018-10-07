@@ -7,3 +7,4 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 gsutil -m cp -r $1/maps.html gs://rg-maps
+gsutil -m cp -r $1/maps.js gs://rg-maps
