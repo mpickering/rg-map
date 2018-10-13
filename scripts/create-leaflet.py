@@ -29,7 +29,8 @@ icon_map = dict ([ ("I", "darkred"),
       ("N", "lightred"),
       ("R", "blue"),
       ("L", "lightblue"),
-      ("T", "gray") ])
+      ("T", "gray"),
+      ("X", "gray") ])
 
 
 def make_colour(event):
