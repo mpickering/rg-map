@@ -224,11 +224,12 @@ wapp.setEvents =  function(key) {
           data = wapp.events.filter(ev => filterEvent(key, checked, ev))
         } else { data = wapp.events }
 
+        $("#event-num").html("Remaining Events: " + data.length.toString())
+
         data = data.sort(function(){
                           return 0.5 - Math.random()
                         }).slice(0,10)
         var items = []
-        $("#event-num").html("Remaining Events: " + wapp.events.length.toString())
         bucket = wapp.bucketEvents()
         var sortable = [];
         for (var k in bucket) {
