@@ -23,6 +23,7 @@ import Data.Foldable
 import Data.Default
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Data.Monoid ((<>))
 
 import Data.Time.Clock.POSIX
 import Data.Time.Clock
@@ -231,7 +232,7 @@ dailyNixScript = nixScriptX dailyRecompile NoOutputCapture
       d <- getCurrentTime
       return (fromIntegral (toModifiedJulianDay (utctDay d)))
 
-
+nixPackages = "https://github.com/mpickering/nixpkgs/archive/547eef61effa37f10c49caebc771c3fceb16f14a.tar.gz"
 
 --contentParam (
 nixScriptX :: ArrowFlow eff ex arr => EpPurity
@@ -246,7 +247,8 @@ nixScriptX impure std script scripts params = proc (scriptDir, a) -> do
         { _etCommand = "perl"
         , _etParams = contentParam (s ^</> script) : params args
         , _etWriteToStdOut = std
-        , _etEnv = [("NIX_PATH", envParam "NIX_PATH")] }) -< (env, a)
+        , _etEnv = [("NIX_PATH",  textParam "nixpkgs="
+                               <> textParam nixPackages )] }) -< (env, a)
   where
     props = def { ep_impure = impure }
     absScripts sd = map (sd ^</>) (script : scripts)
