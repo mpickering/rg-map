@@ -266,10 +266,16 @@ wapp.bucketEvents = function (){
   for (var i = 0; i < data.length; i++) {
     var ev = data[i]
     var lclub = ev.club.toLowerCase()
+    var date = ev.date.toLowerCase().slice(0,4)
     if ( lclub in bucket )
      { bucket[lclub] += 1 }
     else {
       bucket[lclub] = 1
+    }
+    if ( date in bucket )
+     { bucket[date] += 1 }
+    else {
+      bucket[date] = 1
     }
   }
   return bucket;
