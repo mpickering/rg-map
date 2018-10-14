@@ -163,7 +163,10 @@ georefFlow = proc (script_dir, meta_dir, maps) -> do
   toMerge <- splitDir -< merge_dir
   vrt_dir <- step All <<< mergeRasters -< (script_dir, toMerge)
   merged_vrts <- splitDir -< vrt_dir
-  tiles <- mergeDirs' <<< mapA (step All) <<< mapSeqA makeTiles -< [(script_dir, vrt) | vrt <- merged_vrts]
+  bigTiles <- step All <<< makeBigTiles -< (script_dir, merge_dir)
+  smallTiles <- mapA (step All) <<< mapSeqA makeTiles -< [(script_dir, vrt) | vrt <- merged_vrts]
+
+  tiles <- mergeDirs' -< (bigTiles : smallTiles)
 
   leaflet <- step All <<< makeLeaflet -< ( script_dir, (merge_dir, meta_dir))
 
@@ -188,6 +191,8 @@ warp = nixScript [relfile|do_warp|] [] (\dir -> [ pathParam (IPItem dir), outPar
 mergeRasters = nixScript [relfile|merge-rasters.py|] [[relfile|merge-rasters.nix|]] (\rs -> outParam : map contentParam rs )
 
 makeTiles = nixScript [relfile|make_tiles|] [] (\dir -> [ contentParam dir, outParam, textParam "16" ])
+
+makeBigTiles = nixScript [relfile|make_big_tiles|] [] (\dir -> [ contentParam dir, outParam ])
 
 makeLeaflet = nixScript [relfile|create-leaflet.py|] [[relfile|leaflet.nix|]] (\(vrt_dir, meta_dir) ->
                 [ contentParam vrt_dir, contentParam meta_dir, textParam "16", outParam ])
