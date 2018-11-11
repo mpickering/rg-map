@@ -14,7 +14,9 @@ pkgs1.python3Packages.buildPythonPackage rec {
   name = "crawler";
   version = "0.0.1";
 
-  buildInputs = [ pkgs1.firefox xorg.xorgserver pkgs1.imagemagick];
+  buildInputs = [ pkgs1.firefox xorg.xorgserver pkgs1.imagemagick pkgs1.cacert ] ;
+
+  SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
 
   propagatedBuildInputs = with pkgs1.python3Packages; [
     virtual-display selenium beautifulsoup4

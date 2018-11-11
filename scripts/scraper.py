@@ -46,11 +46,13 @@ def make_hash(o):
 
 # Other instances of routegadgets
 # Turned off for now due to https problem
-#inj_urls = ["https://routegadget.fvo.org.uk/"]
-inj_urls = ["http://www.sboc.routegadget.co.uk/"]
+#inj_urls = [
+inj_urls = ["http://www.sboc.routegadget.co.uk/"
+           ,"https://routegadget.fvo.org.uk/"]
 
 # Get the list of available routegadgets from the main page
-page = urlopen("http://www.routegadget.co.uk/")
+eprint("Starting scraper")
+page = urlopen("https://www.routegadget.co.uk/")
 soup = BeautifulSoup(page, 'html.parser').find(class_="nav__list")
 urls_raw = [li.find('a').get('href') for li in soup.find_all('li')]
 # They all end with rg2, stripping that off is more convenient.

@@ -29,6 +29,8 @@ import Data.Time.Clock.POSIX
 import Data.Time.Clock
 import Data.Time.Calendar
 
+import Control.Funflow.External.Nix as Nix
+
 main :: IO ()
 main = do
     cwd <- getCurrentDir
@@ -182,7 +184,7 @@ singleton x = [x]
 scrape = dailyNixScript [relfile|scraper.py|] [[relfile|shell.nix|]]
           (\() -> [ outParam ])
 
-fetch = nixScriptWithOutput [relfile|fetch.py|] [[relfile|shell.nix|]]
+fetch = nixScriptWithOutput [relfile|fetch.py|] [[relfile|fetch.nix|]]
           (\(metadata, mwf, flag)-> [ outParam, contentParam metadata, if flag then "1" else "0" ] ++ (maybe [] (singleton . contentParam) mwf) )
 
 convertToGif = nixScript [relfile|convert_gif|] [] (\dir -> [ pathParam (IPItem dir), outParam ])
@@ -213,6 +215,7 @@ minimise = nixScript [relfile|minimise-site|]
                      ,[relfile|crisper/node-env.nix|]
                      ,[relfile|crisper/node-packages.nix|]]
                      (\dir -> [ contentParam dir, outParam ])
+
 
 ---
 

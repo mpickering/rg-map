@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i python3 shell.nix
+#! nix-shell -i python3 fetch.nix
 
 
 from os.path import basename, splitext
@@ -12,7 +12,6 @@ import sys
 import os
 import subprocess
 from urllib.request import urlretrieve, urlopen
-from bs4 import BeautifulSoup
 import pickle
 
 def eprint(*args, **kwargs):
