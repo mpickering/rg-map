@@ -3,6 +3,8 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TupleSections #-}
 
+{-# OPTIONS_GHC -Wall -Wno-type-defaults #-}
+
 module Main where
 
 import Control.Arrow
@@ -57,7 +59,7 @@ partitionA f = proc xs ->
         That d -> ((second (partitionA f)) >>> arr (\(d, (cs, ds)) -> (cs, d:ds))) -< (d, ys)
         These c d -> (second (partitionA f)) >>> arr (\((c, d), (cs, ds)) -> (c:cs, d:ds)) -< ((c, d), ys)
 
-boolChoice :: ArrowFlow eff ex a => a CS.Item (These CS.Item (Content Dir))
+boolChoice :: (ArrowFlow eff ex a, ArrowChoice a) => a CS.Item (These CS.Item (Content Dir))
 boolChoice = proc dir -> do
   str <- readString_ -< dir
   case str of
@@ -250,8 +252,8 @@ nixScriptX impure std script scripts params = proc (scriptDir, a) -> do
         { _etCommand = "perl"
         , _etParams = contentParam (s ^</> script) : params args
         , _etWriteToStdOut = std
-        , _etEnv = [("NIX_PATH",  textParam "nixpkgs="
-                               <> textParam nixPackages )] }) -< (env, a)
+        , _etEnv = EnvExplicit [("NIX_PATH",  textParam "nixpkgs="
+                                  <> textParam nixPackages )] }) -< (env, a)
   where
     props = def { ep_impure = impure }
     absScripts sd = map (sd ^</>) (script : scripts)
@@ -281,7 +283,7 @@ mergeDirs' = proc inDirs -> do
 rmOut :: ArrowFlow eff ex arr => arr (Content Dir) (Content Dir)
 rmOut = proc dir -> do mergeFiles <<< globDir -< (dir, "*.pickle")
 
-splitDir :: ArrowFlow eff ex arr => arr (Content Dir) ([Content File])
+splitDir :: (ArrowFlow eff ex arr, ArrowChoice arr) => arr (Content Dir) ([Content File])
 splitDir = proc dir -> do
   (_, fs) <- listDirContents -< dir
   mapA reifyFile -< fs
